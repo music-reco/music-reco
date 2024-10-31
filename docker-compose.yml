@@ -1,5 +1,5 @@
 networks:
-  db_docker-network:
+  mimlnetwork:
     external: true
 
 services:
