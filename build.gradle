@@ -73,8 +73,8 @@ dependencies {
     implementation group: 'net.coobird', name: 'thumbnailator', version: '0.4.20'
 
     //swagger
-    implementation 'io.springfox:springfox-boot-starter:3.0.0'
-    implementation 'io.springfox:springfox-swagger-ui:3.0.0'
+    // implementation 'io.springfox:springfox-boot-starter:3.0.0'
+    // implementation 'io.springfox:springfox-swagger-ui:3.0.0'
 
 }
 
