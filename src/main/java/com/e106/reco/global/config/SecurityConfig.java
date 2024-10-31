@@ -38,7 +38,8 @@ public class SecurityConfig {
     public WebSecurityCustomizer webSecurityCustomizer() {
         return web -> web
                 .ignoring()
-                .requestMatchers("/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs/**");
+                .requestMatchers("/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs/**"
+                        ,"/actuator/**", "/images/**", "/js/**", "/css/**", "/ws/**");
     }
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
