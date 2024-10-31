@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: reco
+
+  profiles:
+    include: auth
+
+  datasource:
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:tcp://localhost/~/reco
+
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+        use_sql_comments: true
+
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 100MB
+
+    data:
+      redis:
+        host: localhost
+        port: 6379
+        password:
+
+logging:
+  level:
+    org:
+      hibernate:
+        type:
+          descriptor:
+            sql: trace
