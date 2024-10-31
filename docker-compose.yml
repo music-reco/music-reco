@@ -3,11 +3,11 @@ networks:
     external: true
 
 services:
-  spring:
+  backend:
     container_name: backend
-    image: spring:0.1
     build:
       context: .
+      dockerfile: Dockerfile
     ports:
       - 8080:8080
     networks:
