@@ -63,7 +63,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll())
 
-                .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
 
                 .addFilterBefore(new JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
                 .with(new Custom(authenticationManager(authenticationConfiguration), jwtUtil, tokenRepository), Custom::getClass)
