@@ -40,11 +40,11 @@ public class JwtUtil {
     // 1 2 3 토큰의 특정요소 검증
 
     //4
-    public String createJwt(String category, String nickname, Long userId, String email, Long expireMs){
+    public String createJwt(String category, String nickname, Long seq, String email, Long expireMs){
         return Jwts.builder()
                 .claim("category", category)
                 .claim("nickname", nickname)
-                .claim("id", userId)
+                .claim("seq", seq)
                 .claim("email", email)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis()+expireMs))

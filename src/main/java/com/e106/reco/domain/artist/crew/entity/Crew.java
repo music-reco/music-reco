@@ -2,6 +2,9 @@ package com.e106.reco.domain.artist.crew.entity;
 
 import com.e106.reco.domain.artist.crew.dto.CreateDto;
 import com.e106.reco.domain.artist.entity.Artist;
+import com.e106.reco.domain.artist.entity.Genre;
+import com.e106.reco.domain.artist.entity.Position;
+import com.e106.reco.domain.artist.entity.Region;
 import com.e106.reco.domain.artist.user.entity.User;
 import com.e106.reco.domain.artist.user.entity.UserStatus;
 import com.e106.reco.global.auth.dto.JoinDto;
@@ -34,14 +37,14 @@ public class Crew extends Artist {
         Crew newCrew = Crew.builder()
                 .build();
 
-        newCrew.modifyBirth(newCrew.getBirth());
+        newCrew.modifyRegion(Region.of(createDto.getRegion()));
+        newCrew.modifyGenre(Genre.of(createDto.getGenre()));
 
-        newCrew.modifyRegion(newCrew.getRegion());
-        newCrew.modifyGenre(newCrew.getGenre());
-        newCrew.modifyPosition(newCrew.getPosition());
+        newCrew.modifyBirth(createDto.getBirth());
+        newCrew.modifyNickname(createDto.getNickname());
+        newCrew.modifyContent(createDto.getContent());
 
-        newCrew.modifyNickname(newCrew.getNickname());
-//        newCrew.modifyProfileImage(newCrew.getProfileImage());
+//        newCrew.modifyProfileImage(createDto.getProfileImage());
 
         return newCrew;
     }

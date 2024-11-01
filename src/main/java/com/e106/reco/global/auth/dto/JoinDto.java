@@ -35,9 +35,8 @@ public class JoinDto {
     @Pattern(message = "이름은 한글 2글자 이상 4글자 이하로 작성할 수 있습니다.", regexp = NAME_EXP)
     private String name;
 
-
     @NotBlank(message = "성별은 공백이 될 수 없습니다.")
-    private Gender gender;
+    private String gender;
 
     @NotNull
     private LocalDate birth;
@@ -46,13 +45,13 @@ public class JoinDto {
     private String nickname;
 
     @NotBlank(message = "지역은 공백이 될 수 없습니다.")
-    private Region region;
+    private String region;
 
     @NotBlank(message = "포지션은 공백이 될 수 없습니다.")
-    private Position position;
+    private String position;
 
     @NotBlank(message = "장르는 공백이 될 수 없습니다.")
-    private Genre genre;
+    private String genre;
 
     private String profileImage;
 }

@@ -50,7 +50,7 @@ public class TokenService {
         String accessToken = request.getHeader("Authorization");
 
         if (accessToken == null || !accessToken.startsWith("Bearer ")|| refreshToken == null) {
-            //response status code
+            //response state code
             throw new BusinessException(TOKEN_NOT_EXIST, "요청에 토큰이 입력되지 않았습니다");
         }else if(jwtUtil.isExpired(refreshToken)){
             throw new BusinessException(TOKEN_EXPIRED, "토큰이 만료되었습니다");

@@ -5,15 +5,10 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,20 +19,14 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 
 import static jakarta.persistence.FetchType.LAZY;
-import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Entity
-@Table(name = "crews_users",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name="CREWS_USERS_UNIQUE",
-                        columnNames={"seq","seq"}
-                )})
+@Table(name = "crew_user")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 @Getter
-public class CrewsUsers{
+public class CrewUser{
     @EmbeddedId
     @Column(name = "crew_user_seq")
     private PK pk;
@@ -53,8 +42,9 @@ public class CrewsUsers{
     private User user;
 
     @Builder.Default
-    private CrewUserState status = CrewUserState.NONE;
+    private CrewUserState state = CrewUserState.WAITING;
 
+    @Builder
     @Embeddable
     @NoArgsConstructor
     @AllArgsConstructor
@@ -66,16 +56,35 @@ public class CrewsUsers{
 
         @Column(name = "user_seq")
         private Long userSeq;
-    }
 
+    }
     public void grantChat(CrewUserState state){
-        if(state.equals(CrewUserState.ALL)) this.status = CrewUserState.ALL;
-        else if(state.equals(CrewUserState.BOARD)) this.status = CrewUserState.ALL;
-        else this.status = CrewUserState.CHAT;
+        if(state == CrewUserState.ALL || state == CrewUserState.BOARD) this.state = CrewUserState.ALL;
+        else this.state = CrewUserState.CHAT;
     }
     public void revokeChat(CrewUserState state){
-        if(state.equals(CrewUserState.ALL)) this.status = CrewUserState.BOARD;
-        else this.status = CrewUserState.NONE;
+        if(state == CrewUserState.ALL) this.state = CrewUserState.BOARD;
+        else this.state = CrewUserState.NONE;
     }
-
+    public void grantBoard(CrewUserState state){
+        if(state == CrewUserState.ALL || state == CrewUserState.CHAT) this.state = CrewUserState.ALL;
+        else this.state = CrewUserState.BOARD;
+    }
+    public void revokeBoard(CrewUserState state){
+        if(state == CrewUserState.ALL) this.state = CrewUserState.CHAT;
+        else this.state = CrewUserState.NONE;
+    }
+    public void acceptCrew(CrewUserState state){
+        if(state == CrewUserState.WAITING) this.state = CrewUserState.NONE;
+    }
+    public static CrewUser of(User user, Crew crew) {
+        return CrewUser.builder()
+                .crew(crew)
+                .user(user)
+                .pk(PK.builder()
+                        .crewSeq(crew.getSeq())
+                        .userSeq(user.getSeq())
+                    .build())
+                .build();
+    }
 }
