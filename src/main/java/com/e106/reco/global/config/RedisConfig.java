@@ -33,16 +33,10 @@ public class RedisConfig {
         log.info("password : {}", password);
         return new LettuceConnectionFactory(config);
     }
-
-    @Bean
-    public RedisTemplate<String, Object> redisTemplate() {
-        // Redis 작업을 수행하기 위한 RedisTemplate 빈 정의
-        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+@Bean
+    public RedisTemplate<?, ?> redisTemplate() {
+        RedisTemplate<byte[], byte[]> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory());
-
-        // 모든 경우 시리얼라이저 (일반적인 key, value | Hash key, value)
-        redisTemplate.setDefaultSerializer(new StringRedisSerializer());
-
         return redisTemplate;
     }
 }
