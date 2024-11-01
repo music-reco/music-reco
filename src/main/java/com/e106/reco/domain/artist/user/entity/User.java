@@ -5,6 +5,7 @@ import com.e106.reco.domain.artist.entity.Genre;
 import com.e106.reco.domain.artist.entity.Position;
 import com.e106.reco.domain.artist.entity.Region;
 import com.e106.reco.global.auth.dto.JoinDto;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -21,11 +22,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Builder
 @Entity
 @Table(name = "users")
 public class User extends Artist {
-
+    @Column(unique=true)
     @Email
     private String email;
 

@@ -7,7 +7,6 @@ import com.e106.reco.domain.artist.user.repository.MailRepository;
 import com.e106.reco.domain.artist.user.repository.UserRepository;
 import com.e106.reco.global.auth.dto.JoinDto;
 import com.e106.reco.global.auth.dto.MailDto;
-import com.e106.reco.global.auth.jwt.JwtUtil;
 import com.e106.reco.global.common.CommonResponse;
 import com.e106.reco.global.error.exception.BusinessException;
 import jakarta.annotation.PostConstruct;
@@ -25,7 +24,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.Optional;
 
@@ -33,7 +31,8 @@ import static com.e106.reco.global.error.errorcode.AuthErrorCode.EMAIL_EXPIRED;
 import static com.e106.reco.global.error.errorcode.AuthErrorCode.EMAIL_INVALID;
 import static com.e106.reco.global.error.errorcode.AuthErrorCode.EMAIL_NOT_SENT;
 import static com.e106.reco.global.error.errorcode.AuthErrorCode.USER_EXIST;
-import static com.e106.reco.global.util.RandomHelper.*;
+import static com.e106.reco.global.util.RandomHelper.USER_AUTH_MAIL_TITLE;
+import static com.e106.reco.global.util.RandomHelper.generateRandomMailAuthenticationCode;
 import static com.e106.reco.global.util.RandomHelper.getEmailAuthContent;
 
 @RequiredArgsConstructor
@@ -52,6 +51,7 @@ public class AuthService  implements UserDetailsService {
     //TODO : 나중에 지우기 마스터 계정 생성용임
     @PostConstruct
     public void INIT(){
+        if(userRepository.existsByEmail("aaaa@ssafy.com")) return;
         userRepository.save(User.builder()
                 .email("aaaa@ssafy.com")
                         .password(bCryptPasswordEncoder.encode("1111"))
