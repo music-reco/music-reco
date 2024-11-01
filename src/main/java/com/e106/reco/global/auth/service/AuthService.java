@@ -1,13 +1,16 @@
 package com.e106.reco.global.auth.service;
 
 import com.e106.reco.domain.artist.user.dto.CustomUserDetails;
+import com.e106.reco.domain.artist.user.entity.Gender;
 import com.e106.reco.domain.artist.user.entity.User;
 import com.e106.reco.domain.artist.user.repository.MailRepository;
 import com.e106.reco.domain.artist.user.repository.UserRepository;
 import com.e106.reco.global.auth.dto.JoinDto;
 import com.e106.reco.global.auth.dto.MailDto;
+import com.e106.reco.global.auth.jwt.JwtUtil;
 import com.e106.reco.global.common.CommonResponse;
 import com.e106.reco.global.error.exception.BusinessException;
+import jakarta.annotation.PostConstruct;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
@@ -19,8 +22,10 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.Optional;
 
@@ -36,12 +41,24 @@ import static com.e106.reco.global.util.RandomHelper.getEmailAuthContent;
 @Transactional
 @Slf4j
 public class AuthService  implements UserDetailsService {
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final MailRepository mailRepository;
     private final UserRepository userRepository;
     private final JavaMailSender mailSender;
 
     @Value("${spring.mail.username}")
     private String configEmail;
+
+    //TODO : 나중에 지우기 마스터 계정 생성용임
+    @PostConstruct
+    public void INIT(){
+        userRepository.save(User.builder()
+                .email("aaaa@ssafy.com")
+                        .password(bCryptPasswordEncoder.encode("1111"))
+                        .name("master")
+                        .gender(Gender.ETC)
+                .build());
+    }
 
     public CommonResponse join(JoinDto joinDto) {
         String email = joinDto.getEmail();
@@ -51,8 +68,8 @@ public class AuthService  implements UserDetailsService {
 
         // 회원가입
         User user = User.of(joinDto);
+        user.modifyPassword(bCryptPasswordEncoder.encode(joinDto.getPassword()));
         userRepository.save(user);
-
         return new CommonResponse("회원가입 완료");
     }
     public CommonResponse sendEmail(MailDto mailDto) {

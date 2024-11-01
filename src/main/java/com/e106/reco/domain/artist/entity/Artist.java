@@ -15,7 +15,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 
-import static com.e106.reco.domain.artist.entity.Position.크루;
+import static com.e106.reco.domain.artist.entity.Position.CREW;
 
 @Getter
 @Entity
@@ -35,7 +35,7 @@ public class Artist {
     private String nickname;
 
     @Builder.Default()
-    private Position position = 크루;
+    private Position position = CREW;
     private Region region;
     private Genre genre;
 

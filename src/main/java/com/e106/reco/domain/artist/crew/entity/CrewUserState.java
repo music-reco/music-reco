@@ -4,5 +4,6 @@ public enum CrewUserState {
     NONE,
     ALL,
     CHAT,
-    BOARD
+    BOARD,
+    WAITING
 }
