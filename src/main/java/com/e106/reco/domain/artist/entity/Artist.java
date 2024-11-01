@@ -3,6 +3,7 @@ package com.e106.reco.domain.artist.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
@@ -27,7 +28,7 @@ import static com.e106.reco.domain.artist.entity.Position.CREW;
 public class Artist {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "artist_seq")
     private Long seq;
 
