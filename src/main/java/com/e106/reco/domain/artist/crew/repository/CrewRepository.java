@@ -10,5 +10,5 @@ import java.util.Optional;
 
 public interface CrewRepository extends JpaRepository<Crew, Long> {
     Optional<Crew> findBySeq(Long Seq);
-    Optional<Crew> findBySeqAndUser(Long Seq, User user);
+    Optional<Crew> findBySeqAndManager(Long Seq, User user);
 }
