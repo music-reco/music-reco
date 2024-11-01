@@ -36,7 +36,7 @@ public class CrewService {
     public CommonResponse acceptCrew(CrewAcceptDto acceptDto) {
         CustomUserDetails userDetails = AuthUtil.getCustomUserDetails();
         User user = userRepository.findBySeq(userDetails.getSeq()).orElseThrow(() -> new BusinessException(USER_NOT_FOUND));
-        Crew crew = crewRepository.findBySeqAndUser(acceptDto.getCrewSeq(), user)
+        Crew crew = crewRepository.findBySeqAndManager(acceptDto.getCrewSeq(), user)
                 .orElseThrow(() -> new BusinessException(CREW_NOT_FOUND));
 
         if(crewUserRepository.isPossibleCrewUserAccept(crew)>=20)
