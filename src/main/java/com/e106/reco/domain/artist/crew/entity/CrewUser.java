@@ -77,7 +77,6 @@ public class CrewUser{
     public void acceptCrew(CrewUserState state){
         if(state == CrewUserState.WAITING) this.state = CrewUserState.NONE;
     }
-
     public static CrewUser of(User user, Crew crew) {
         return CrewUser.builder()
                 .crew(crew)

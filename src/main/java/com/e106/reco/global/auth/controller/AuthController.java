@@ -26,6 +26,11 @@ public class AuthController {
     private final AuthService authService;
     private final TokenService tokenService;
 
+//    @GetMapping
+//
+//    {
+
+//    }
     @PostMapping("/join")
     public ResponseEntity<CommonResponse> join(@RequestBody @Valid JoinDto joinDto){
         return ResponseEntity.ok(authService.join(joinDto));
