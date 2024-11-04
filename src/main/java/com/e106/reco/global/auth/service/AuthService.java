@@ -1,5 +1,9 @@
 package com.e106.reco.global.auth.service;
 
+import com.e106.reco.domain.artist.crew.repository.CrewUserRepository;
+import com.e106.reco.domain.artist.entity.Genre;
+import com.e106.reco.domain.artist.entity.Position;
+import com.e106.reco.domain.artist.entity.Region;
 import com.e106.reco.domain.artist.user.dto.CustomUserDetails;
 import com.e106.reco.domain.artist.user.entity.Gender;
 import com.e106.reco.domain.artist.user.entity.User;
@@ -7,8 +11,10 @@ import com.e106.reco.domain.artist.user.repository.MailRepository;
 import com.e106.reco.domain.artist.user.repository.UserRepository;
 import com.e106.reco.global.auth.dto.JoinDto;
 import com.e106.reco.global.auth.dto.MailDto;
+import com.e106.reco.global.auth.dto.UserInfoDto;
 import com.e106.reco.global.common.CommonResponse;
 import com.e106.reco.global.error.exception.BusinessException;
+import com.e106.reco.global.util.AuthUtil;
 import jakarta.annotation.PostConstruct;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
@@ -25,12 +31,15 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static com.e106.reco.global.error.errorcode.AuthErrorCode.EMAIL_EXPIRED;
 import static com.e106.reco.global.error.errorcode.AuthErrorCode.EMAIL_INVALID;
 import static com.e106.reco.global.error.errorcode.AuthErrorCode.EMAIL_NOT_SENT;
 import static com.e106.reco.global.error.errorcode.AuthErrorCode.USER_EXIST;
+import static com.e106.reco.global.error.errorcode.AuthErrorCode.USER_NOT_FOUND;
 import static com.e106.reco.global.util.RandomHelper.USER_AUTH_MAIL_TITLE;
 import static com.e106.reco.global.util.RandomHelper.generateRandomMailAuthenticationCode;
 import static com.e106.reco.global.util.RandomHelper.getEmailAuthContent;
@@ -44,6 +53,7 @@ public class AuthService  implements UserDetailsService {
     private final MailRepository mailRepository;
     private final UserRepository userRepository;
     private final JavaMailSender mailSender;
+    private final CrewUserRepository crewUserRepository;
 
     @Value("${spring.mail.username}")
     private String configEmail;
@@ -53,11 +63,27 @@ public class AuthService  implements UserDetailsService {
     public void INIT(){
         if(userRepository.existsByEmail("aaaa@ssafy.com")) return;
         userRepository.save(User.builder()
-                .email("aaaa@ssafy.com")
+                        .seq(1L)
+                        .email("aaaa@ssafy.com")
                         .password(bCryptPasswordEncoder.encode("1111"))
+                        .nickname("king")
                         .name("master")
                         .gender(Gender.ETC)
+                        .birth(LocalDate.now())
+                        .position(Position.BASE)
+                        .genre(Genre.BALAD)
+                        .region(Region.BS)
+                        .content("Hi everyone")
+//                        .profileImage()
                 .build());
+    }
+
+    public UserInfoDto getInfo() {
+        User user = userRepository.findBySeq(AuthUtil.getCustomUserDetails().getSeq())
+                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND));
+        List<Long> crews = crewUserRepository.findCrewSeqByUserSeq(user.getSeq());
+        log.info(user.getNickname());
+        return UserInfoDto.of(user,crews);
     }
 
     public CommonResponse join(JoinDto joinDto) {
@@ -111,11 +137,18 @@ public class AuthService  implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(IllegalArgumentException::new);
+        List<Long> crewUser = crewUserRepository.findCrewSeqByUserSeq(user.getSeq());
         return CustomUserDetails.builder()
                 .seq(user.getSeq())
                 .nickname(user.getNickname())
                 .password(user.getPassword())
                 .email(user.getEmail())
+                .genre(user.getGenre())
+                .year(String.valueOf(user.getBirth().getYear()))
+                .position(user.getPosition())
+                .region(user.getRegion())
+                .gender(user.getGender())
+                .crews(crewUser)
                 .role(null)
                 .build();
 

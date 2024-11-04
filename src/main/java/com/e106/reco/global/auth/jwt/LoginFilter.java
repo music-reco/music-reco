@@ -1,6 +1,10 @@
 package com.e106.reco.global.auth.jwt;
 
+import com.e106.reco.domain.artist.entity.Genre;
+import com.e106.reco.domain.artist.entity.Position;
+import com.e106.reco.domain.artist.entity.Region;
 import com.e106.reco.domain.artist.user.dto.CustomUserDetails;
+import com.e106.reco.domain.artist.user.entity.Gender;
 import com.e106.reco.global.auth.token.repository.TokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -17,6 +21,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
+
 @Slf4j
 @RequiredArgsConstructor
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
@@ -37,18 +42,33 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException, ServletException {
-
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         String nickname = customUserDetails.getNickname();
         String email = customUserDetails.getEmail();
         Long seq = customUserDetails.getSeq();
+
+        Region region = customUserDetails.getRegion();
+        Position position = customUserDetails.getPosition();
+        Gender gender = customUserDetails.getGender();
+        String year = customUserDetails.getYear();
+        Genre genre = customUserDetails.getGenre();
+
+        StringBuilder sb = new StringBuilder();
+        customUserDetails.getCrews().forEach(crew -> sb.append(crew).append(" "));
+        log.info("crews: {}", sb);
+        if(sb.length()>1) sb.deleteCharAt(sb.length()-1);
+
+        String crews = sb.toString();
+        System.out.print(crews);
 //        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
 //        Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
 //        GrantedAuthority auth = iterator.next();
 
         // 토큰 생성
-        String accessToken = jwtUtil.createJwt("access", nickname, seq, email, 86400000L);
-        String refreshToken = jwtUtil.createJwt("refresh", nickname, seq, email, 864000000L);
+        String accessToken = jwtUtil.createJwt("access", nickname, seq, email,
+                position, gender, genre, year, region, crews, 86400000L);
+        String refreshToken = jwtUtil.createJwt("refresh", nickname, seq, email,
+                position, gender, genre, year, region, crews, 86400000L);
 
         // 토큰 응답 설정
         // 세션에 사용자 ID 저장

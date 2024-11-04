@@ -2,6 +2,7 @@ package com.e106.reco.global.auth.controller;
 
 import com.e106.reco.global.auth.dto.JoinDto;
 import com.e106.reco.global.auth.dto.MailDto;
+import com.e106.reco.global.auth.dto.UserInfoDto;
 import com.e106.reco.global.auth.service.AuthService;
 import com.e106.reco.global.auth.token.service.TokenService;
 import com.e106.reco.global.common.CommonResponse;
@@ -26,11 +27,10 @@ public class AuthController {
     private final AuthService authService;
     private final TokenService tokenService;
 
-//    @GetMapping
-//
-//    {
-
-//    }
+    @GetMapping
+    public ResponseEntity<UserInfoDto> userInfo() {
+        return ResponseEntity.ok(authService.getInfo());
+    }
     @PostMapping("/join")
     public ResponseEntity<CommonResponse> join(@RequestBody @Valid JoinDto joinDto){
         return ResponseEntity.ok(authService.join(joinDto));

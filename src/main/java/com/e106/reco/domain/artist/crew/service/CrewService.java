@@ -2,8 +2,8 @@ package com.e106.reco.domain.artist.crew.service;
 
 import com.e106.reco.domain.artist.crew.dto.CreateDto;
 import com.e106.reco.domain.artist.crew.dto.CrewChangeDto;
-import com.e106.reco.domain.artist.crew.dto.CrewGrantDto;
 import com.e106.reco.domain.artist.crew.dto.CrewDto;
+import com.e106.reco.domain.artist.crew.dto.CrewGrantDto;
 import com.e106.reco.domain.artist.crew.dto.CrewRoleDto;
 import com.e106.reco.domain.artist.crew.entity.Crew;
 import com.e106.reco.domain.artist.crew.entity.CrewUser;
@@ -68,9 +68,10 @@ public class CrewService {
             throw new BusinessException(USER_ALREADY_JOIN);
 
         if(crewUserRepository.countCrewUsers(crewGrantDto.getCrewSeq(),
-                crewGrantDto.getCrews().stream()
-                        .map(CrewRoleDto::getUserSeq)
-                        .collect(Collectors.toList())) != crewGrantDto.getCrews().size())
+                    crewGrantDto.getCrews().stream()
+                            .map(CrewRoleDto::getUserSeq)
+                            .collect(Collectors.toList()))
+                != crewGrantDto.getCrews().size())
             throw new BusinessException(CREW_USER_NOT_FOUND);
 
         List<CrewUser> crewUsers = crewGrantDto.getCrews().stream()
@@ -96,7 +97,10 @@ public class CrewService {
         return getCrewRoles(crewGrantDto.getCrewSeq());
     }
     public List<CrewRoleDto> getCrewRoles(Long crewSeq) {
-        List<CrewUser> crewUsers = crewUserRepository.findCrewUsersByCrewSeq(crewSeq);
+        Crew crew = crewRepository.findBySeq(crewSeq)
+                .orElseThrow(() -> new BusinessException(CREW_NOT_FOUND));
+
+        List<CrewUser> crewUsers = crewUserRepository.findCrewUsersByCrewSeqWithoutMaster(crewSeq, crew.getManager().getSeq());
 
         return crewUsers.stream().map(crewUser -> CrewRoleDto.builder()
                         .userSeq(crewUser.getPk().getUserSeq())
@@ -109,15 +113,14 @@ public class CrewService {
 
         if(!crewRepository.existsBySeqAndManagerSeq(acceptDto.getCrewSeq(), userDetails.getSeq()))
             throw new BusinessException(USER_NOT_MASTER);
-
         if(crewUserRepository.isPossibleCrewUserAccept(acceptDto.getCrewSeq())>=20)
             throw new BusinessException(CREW_ALREADY_FULL);
 
-        CrewUser crewUser = crewUserRepository.findById(
+        CrewUser crewUser = crewUserRepository.findByPkAndState(
                     CrewUser.PK.builder()
                             .crewSeq(acceptDto.getCrewSeq())
                             .userSeq(acceptDto.getUserSeq())
-                    .build())
+                    .build(), CrewUserState.WAITING)
                 .orElseThrow(() -> new BusinessException(USER_NOT_WAIT));
 
         crewUser.acceptCrew(crewUser.getState());

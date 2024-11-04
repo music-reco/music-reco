@@ -1,5 +1,9 @@
 package com.e106.reco.global.auth.jwt;
 
+import com.e106.reco.domain.artist.entity.Genre;
+import com.e106.reco.domain.artist.entity.Position;
+import com.e106.reco.domain.artist.entity.Region;
+import com.e106.reco.domain.artist.user.entity.Gender;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -32,20 +36,56 @@ public class JwtUtil {
     public String getEmail(String token) {
         return Jwts.parser().verifyWith(secertKey).build().parseSignedClaims(token).getPayload().get("email", String.class);
     }
+
+    public Position getPosition(String token) {
+        return Position.valueOf(Jwts.parser().verifyWith(secertKey).build().parseSignedClaims(token).getPayload().get("position", String.class));
+    }
+
+    public Gender getGender(String token) {
+        return Gender.valueOf(Jwts.parser().verifyWith(secertKey).build().parseSignedClaims(token).getPayload().get("gender", String.class));
+    }
+
+    public Region getRegion(String token) {
+       return Region.valueOf(Jwts.parser().verifyWith(secertKey).build().parseSignedClaims(token).getPayload().get("region", String.class));
+    }
+
+    public Genre getGenre(String token) {
+        return Genre.valueOf(Jwts.parser().verifyWith(secertKey).build().parseSignedClaims(token).getPayload().get("genre", String.class));
+    }
+
+    public String getYear(String token) {
+        return Jwts.parser().verifyWith(secertKey).build().parseSignedClaims(token).getPayload().get("year", String.class);
+    }
+
+    public String getCrews(String token) {
+        return Jwts.parser().verifyWith(secertKey).build().parseSignedClaims(token).getPayload().get("crews", String.class);
+    }
+
+
     //5
     public Boolean isExpired(String token){
         return Jwts.parser().verifyWith(secertKey).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
     }
 
+
+
     // 1 2 3 토큰의 특정요소 검증
 
     //4
-    public String createJwt(String category, String nickname, Long seq, String email, Long expireMs){
+    public String createJwt(String category, String nickname, Long seq, String email
+                            , Position position, Gender gender, Genre genre, String Year, Region region
+                            , String crews, Long expireMs){
         return Jwts.builder()
                 .claim("category", category)
                 .claim("nickname", nickname)
                 .claim("seq", seq)
                 .claim("email", email)
+                .claim("position", position)
+                .claim("gender", gender)
+                .claim("genre", genre)
+                .claim("year", Year)
+                .claim("region", region)
+                .claim("crews", crews)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis()+expireMs))
                 .signWith(secertKey)

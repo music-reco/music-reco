@@ -16,6 +16,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
 @Builder
@@ -63,9 +66,24 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
-        CustomUserDetails customUserDetails = CustomUserDetails.builder()
+        List<Long> crews = new ArrayList<>();
+        if(jwtUtil.getCrews(token).length()>1)
+            crews = Arrays.stream(jwtUtil.getCrews(token).split(" "))
+                .map(Long::parseLong)
+                .toList();
+
+        CustomUserDetails customUserDetails
+         = CustomUserDetails.builder()
                 .seq(jwtUtil.getSeq(token))
                 .nickname(jwtUtil.getNickname(token))
+                .email(jwtUtil.getEmail(token))
+                .genre(jwtUtil.getGenre(token))
+                .gender(jwtUtil.getGender(token))
+                .year(jwtUtil.getYear(token))
+                .region(jwtUtil.getRegion(token))
+                .position(jwtUtil.getPosition(token))
+                .crews(crews)
+                .role(null)
                 .build();
 
         Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
