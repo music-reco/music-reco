@@ -1,5 +1,9 @@
 package com.e106.reco.global.auth.token.service;
 
+import com.e106.reco.domain.artist.entity.Genre;
+import com.e106.reco.domain.artist.entity.Position;
+import com.e106.reco.domain.artist.entity.Region;
+import com.e106.reco.domain.artist.user.entity.Gender;
 import com.e106.reco.global.auth.dto.UserDto;
 import com.e106.reco.global.auth.jwt.JwtUtil;
 import com.e106.reco.global.auth.token.repository.TokenRepository;
@@ -64,14 +68,23 @@ public class TokenService {
         }
         String email = jwtUtil.getEmail(refreshToken);
         String nickname = jwtUtil.getNickname(refreshToken);
-        Long userId = jwtUtil.getSeq(refreshToken);
+        Long seq = jwtUtil.getSeq(refreshToken);
+        Position position = jwtUtil.getPosition(refreshToken);
+        Genre genre = jwtUtil.getGenre(refreshToken);
+        Gender gender = jwtUtil.getGender(refreshToken);
+        Region region = jwtUtil.getRegion(refreshToken);
+        String year = jwtUtil.getYear(refreshToken);
+        String crews = jwtUtil.getCrews(refreshToken);
+
 
         //make new JWT
-        String newAccess = jwtUtil.createJwt("access", nickname, userId, email, 86400000L);
-        String newRefresh = jwtUtil.createJwt("refresh", nickname, userId, email, 864000000L);
+        String newAccess = jwtUtil.createJwt("access", nickname, seq, email,
+                position, gender, genre, year, region, crews, 86400000L);
+        String newRefresh = jwtUtil.createJwt("refresh", nickname, seq, email,
+                position, gender, genre, year, region, crews, 86400000L);
 
         //response
-        tokenRepository.createRefreshToken(userId, newRefresh);
+        tokenRepository.createRefreshToken(seq, newRefresh);
         response.addHeader("Authorization", "Bearer " + newAccess);
         response.addCookie(createCookie("refresh", newRefresh));
 

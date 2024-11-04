@@ -1,5 +1,9 @@
 package com.e106.reco.domain.artist.user.dto;
 
+import com.e106.reco.domain.artist.entity.Genre;
+import com.e106.reco.domain.artist.entity.Position;
+import com.e106.reco.domain.artist.entity.Region;
+import com.e106.reco.domain.artist.user.entity.Gender;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 @Getter
 @Builder
@@ -20,6 +25,15 @@ public class CustomUserDetails implements UserDetails{
     private final String nickname;
     private final String password;
     private final String role;
+
+    private final String year;
+
+    private final Gender gender;
+    private final Region region;
+    private final Position position;
+    private final Genre genre;
+
+    private final List<Long> crews;
 
     //roll 반환하는 것
     @Override
@@ -35,12 +49,6 @@ public class CustomUserDetails implements UserDetails{
     }
 
 //    public UserRole getRole() { return role; }
-
-    public String getNickname() {
-        return nickname;
-    }
-
-    public Long getSeq() { return seq; }
 
     @Override
     public String getPassword() {
