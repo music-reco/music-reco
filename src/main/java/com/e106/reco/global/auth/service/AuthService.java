@@ -81,7 +81,7 @@ public class AuthService  implements UserDetailsService {
     public UserInfoDto getInfo() {
         User user = userRepository.findBySeq(AuthUtil.getCustomUserDetails().getSeq())
                 .orElseThrow(() -> new BusinessException(USER_NOT_FOUND));
-        List<Long> crews = crewUserRepository.findCrewSeqByUserSeq(user.getSeq());
+        List<Long> crews = crewUserRepository.findPk_CrewSeqByPk_userSeq(user.getSeq());
         log.info(user.getNickname());
         return UserInfoDto.of(user,crews);
     }
@@ -137,7 +137,7 @@ public class AuthService  implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(IllegalArgumentException::new);
-        List<Long> crewUser = crewUserRepository.findCrewSeqByUserSeq(user.getSeq());
+        List<Long> crews = crewUserRepository.findPk_CrewSeqByPk_userSeq(user.getSeq());
         return CustomUserDetails.builder()
                 .seq(user.getSeq())
                 .nickname(user.getNickname())
@@ -148,7 +148,7 @@ public class AuthService  implements UserDetailsService {
                 .position(user.getPosition())
                 .region(user.getRegion())
                 .gender(user.getGender())
-                .crews(crewUser)
+                .crews(crews)
                 .role(null)
                 .build();
 
