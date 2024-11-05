@@ -28,7 +28,6 @@ import static jakarta.persistence.FetchType.LAZY;
 @Getter
 public class CrewUser{
     @EmbeddedId
-    @Column(name = "crew_user_seq")
     private PK pk;
 
     @MapsId("crewSeq")
