@@ -11,9 +11,10 @@ import com.e106.reco.domain.artist.user.repository.MailRepository;
 import com.e106.reco.domain.artist.user.repository.UserRepository;
 import com.e106.reco.global.auth.dto.JoinDto;
 import com.e106.reco.global.auth.dto.MailDto;
-import com.e106.reco.global.auth.dto.UserInfoDto;
+import com.e106.reco.domain.artist.user.dto.UserInfoDto;
 import com.e106.reco.global.common.CommonResponse;
 import com.e106.reco.global.error.exception.BusinessException;
+import com.e106.reco.global.s3.S3FileService;
 import com.e106.reco.global.util.AuthUtil;
 import jakarta.annotation.PostConstruct;
 import jakarta.mail.MessagingException;
@@ -30,6 +31,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -48,15 +50,18 @@ import static com.e106.reco.global.util.RandomHelper.getEmailAuthContent;
 @Service
 @Transactional
 @Slf4j
-public class AuthService  implements UserDetailsService {
+public class AuthService implements UserDetailsService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final MailRepository mailRepository;
     private final UserRepository userRepository;
     private final JavaMailSender mailSender;
     private final CrewUserRepository crewUserRepository;
+    private final S3FileService s3FileService;
 
     @Value("${spring.mail.username}")
     private String configEmail;
+    @Value("${spring.image.profile.user}")
+    private String configProfile;
 
     //TODO : 나중에 지우기 마스터 계정 생성용임
     @PostConstruct
@@ -86,11 +91,16 @@ public class AuthService  implements UserDetailsService {
         return UserInfoDto.of(user,crews);
     }
 
-    public CommonResponse join(JoinDto joinDto) {
+    public CommonResponse join(JoinDto joinDto, MultipartFile file) {
         String email = joinDto.getEmail();
 
         if(userRepository.existsByEmail(email)) throw new BusinessException(USER_EXIST);
         else if(!mailRepository.isEmailValid(email)) throw new BusinessException(EMAIL_EXPIRED);
+
+
+        String image_url = file==null ?  configProfile : s3FileService.uploadFile(file);
+        joinDto.setProfileImage(image_url);
+        log.info("profile : {}", joinDto.getProfileImage());
 
         // 회원가입
         User user = User.of(joinDto);

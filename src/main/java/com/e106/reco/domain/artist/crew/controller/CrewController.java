@@ -19,7 +19,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -31,8 +34,15 @@ public class CrewController {
     private final CrewService crewService;
 
     @PostMapping
-    public ResponseEntity<CommonResponse> createCrew(@RequestBody @Valid CreateDto createDto) {
-        return ResponseEntity.ok(crewService.createCrew(createDto));
+    public ResponseEntity<CommonResponse> createCrew(@RequestPart @Valid CreateDto createDto,
+                                                     @RequestParam(value = "profile", required = false) MultipartFile file){
+        return ResponseEntity.ok(crewService.createCrew(createDto, file));
+    }
+
+    @PutMapping
+    public ResponseEntity<CommonResponse> updateCrew(@RequestPart @Valid CrewDto crewDto,
+                                                     @RequestParam(value = "profile", required = false) MultipartFile file){
+        return ResponseEntity.ok(crewService.updateCrew(crewDto, file));
     }
 
     @PostMapping("/join")

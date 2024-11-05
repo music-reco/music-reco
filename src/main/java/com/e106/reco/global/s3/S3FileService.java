@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.e106.reco.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import net.coobird.thumbnailator.Thumbnailator;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +19,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import static com.e106.reco.global.error.errorcode.S3ErrorCode.FILE_NAME_ERROR;
+import static com.e106.reco.global.error.errorcode.S3ErrorCode.FILE_UPLOAD_ERROR;
 
 @Service
 @RequiredArgsConstructor
@@ -42,8 +46,7 @@ public class S3FileService {
             amazonS3Client.putObject(new PutObjectRequest(bucket, fileName, new ByteArrayInputStream(thumbnailBytes), objectMetadata)
                     .withCannedAcl(CannedAccessControlList.PublicRead));
         } catch (IOException e) {
-            // todo : 적당한 에러 던지기 : 파일 업로드 에러 같은걸로
-            throw new RuntimeException(e);
+            throw new BusinessException(FILE_UPLOAD_ERROR);
         }
 
         return fileName;
@@ -59,8 +62,7 @@ public class S3FileService {
             amazonS3Client.putObject(new PutObjectRequest(bucket, fileName, inputStream, objectMetadata)
                     .withCannedAcl(CannedAccessControlList.PublicRead));
         } catch (IOException e) {
-            // todo : 적당하 에러 던지기 : 파일 업로드 에러 같은걸로
-            throw new RuntimeException(e);
+            throw new BusinessException(FILE_UPLOAD_ERROR);
         }
 
         return fileName;
@@ -79,8 +81,7 @@ public class S3FileService {
                 amazonS3Client.putObject(new PutObjectRequest(bucket, fileName, inputStream, objectMetadata)
                         .withCannedAcl(CannedAccessControlList.PublicRead));
             } catch (IOException e) {
-                // todo : 여기도 적당한 에러 터트리기 : 파일업로드 에러 같은걸로
-                throw new RuntimeException(e);
+                throw new BusinessException(FILE_UPLOAD_ERROR);
             }
 
             fileNameList.add(fileName);
@@ -111,9 +112,8 @@ public class S3FileService {
     }
 
     private String getFileExtension(String fileName) {
-        if (fileName.length() == 0) {
-            // todo: 대충 에러던지기 : 파일 이름이 이상함.
-        }
+        if (fileName.isEmpty()) throw new BusinessException(FILE_NAME_ERROR);
+
         ArrayList<String> fileValidate = new ArrayList<>();
         fileValidate.add(".jpg");
         fileValidate.add(".jpeg");

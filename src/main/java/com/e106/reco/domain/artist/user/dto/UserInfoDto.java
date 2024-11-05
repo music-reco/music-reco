@@ -1,8 +1,5 @@
-package com.e106.reco.global.auth.dto;
+package com.e106.reco.domain.artist.user.dto;
 
-import com.e106.reco.domain.artist.entity.Genre;
-import com.e106.reco.domain.artist.entity.Position;
-import com.e106.reco.domain.artist.entity.Region;
 import com.e106.reco.domain.artist.user.entity.Gender;
 import com.e106.reco.domain.artist.user.entity.User;
 import lombok.AllArgsConstructor;
@@ -29,11 +26,13 @@ public class UserInfoDto {
     private LocalDate birth;
     private String nickname;
 
-    private Region region;
-    private Position position;
-    private Genre genre;
+    private String region;
+    private String position;
+    private String genre;
 
     private String profileImage;
+
+    private String content;
 
     private List<Long> crews;
 
@@ -45,10 +44,12 @@ public class UserInfoDto {
                 .gender(user.getGender())
                 .birth(user.getBirth())
                 .nickname(user.getNickname())
-                .genre(user.getGenre())
-                .region(user.getRegion())
-                .position(user.getPosition())
+                .genre(user.getGenre().name())
+                .region(user.getRegion().name())
+                .position(user.getPosition().name())
                 .profileImage(user.getProfileImage())
+                .content(user.getContent())
                 .crews(crews).build();
+
     }
 }

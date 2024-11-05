@@ -43,6 +43,8 @@ public class Artist {
     private String profileImage;
     private String content;
 
+    public void modifySeq(Long seq) { this.seq = seq; }
+
     public void modifyNickname(String nickname) {
         this.nickname = nickname;
     }

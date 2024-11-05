@@ -15,11 +15,14 @@ import com.e106.reco.domain.artist.user.entity.User;
 import com.e106.reco.domain.artist.user.repository.UserRepository;
 import com.e106.reco.global.common.CommonResponse;
 import com.e106.reco.global.error.exception.BusinessException;
+import com.e106.reco.global.s3.S3FileService;
 import com.e106.reco.global.util.AuthUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,6 +46,11 @@ public class CrewService {
     private final UserRepository userRepository;
     private final CrewUserRepository crewUserRepository;
 
+    private final S3FileService s3FileService;
+
+    @Value("${spring.image.profile.crew}")
+    private String configProfile;
+
     public List<CrewRoleDto> roleCrew(Long crewSeq) {
         CustomUserDetails userDetails = AuthUtil.getCustomUserDetails();
         if(!crewRepository.existsBySeqAndManagerSeq(crewSeq, userDetails.getSeq()))
@@ -50,7 +58,6 @@ public class CrewService {
 
         return getCrewRoles(crewSeq);
     }
-
 
     public List<CrewRoleDto> grantCrew(CrewGrantDto crewGrantDto) {
         CustomUserDetails userDetails = AuthUtil.getCustomUserDetails();
@@ -172,6 +179,8 @@ public class CrewService {
 
         Crew crew = crewRepository.findBySeq(leaveDto.getCrewSeq())
                 .orElseThrow(() -> new BusinessException(CREW_NOT_FOUND));
+
+        // TODO : 크루 마스터가 떠나는 경우 크루 권한 양도 필수
         if(crew.getManager().getSeq() == userDetails.getSeq())
             throw new BusinessException(USER_IS_MASTER);
 
@@ -181,12 +190,27 @@ public class CrewService {
         crewUserRepository.delete(crewUser);
         return new CommonResponse("크루 탈퇴가 완료되었습니다.");
     }
-    public CommonResponse createCrew (CreateDto creatDto) {
+    public CommonResponse updateCrew (CrewDto crewDto, MultipartFile file) {
+        CustomUserDetails userDetails = AuthUtil.getCustomUserDetails();
+        User user = userRepository.findBySeq(userDetails.getSeq())
+                .orElseThrow(()->new BusinessException(USER_NOT_FOUND));
+        Crew crew = crewRepository.findBySeqAndManagerSeq(crewDto.getCrewSeq(), user.getSeq())
+                .orElseThrow(()->new BusinessException(CREW_NOT_FOUND));
+
+        crewDto.setProfileImage(file==null ? configProfile : s3FileService.uploadFile(file));
+        Crew.of(crew, crewDto);
+        crewRepository.save(crew);
+        return new CommonResponse("크루 업데이트 완료");
+    }
+    public CommonResponse createCrew (CreateDto creatDto, MultipartFile file) {
         CustomUserDetails userDetails = AuthUtil.getCustomUserDetails();
         User user = userRepository.findBySeq(userDetails.getSeq())
                 .orElseThrow(()->new BusinessException(USER_NOT_FOUND));
 
+        String imageUrl = file==null ? configProfile : s3FileService.uploadFile(file);
+
         Crew crew = Crew.of(creatDto);
+        crew.modifyProfileImage(imageUrl);
         crew.modifyManagerSeq(user);
 
         CrewUser crewUser = CrewUser.of(user, crewRepository.save(crew));

@@ -1,9 +1,5 @@
 package com.e106.reco.global.auth.dto;
 
-import com.e106.reco.domain.artist.entity.Genre;
-import com.e106.reco.domain.artist.entity.Position;
-import com.e106.reco.domain.artist.entity.Region;
-import com.e106.reco.domain.artist.user.entity.Gender;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -15,7 +11,8 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 
-import static com.e106.reco.global.util.RegExpUtils.*;
+import static com.e106.reco.global.util.RegExpUtils.EMAIL_EXP;
+import static com.e106.reco.global.util.RegExpUtils.NAME_EXP;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -54,4 +51,5 @@ public class JoinDto {
     private String genre;
 
     private String profileImage;
+    private String content;
 }

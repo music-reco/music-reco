@@ -7,8 +7,6 @@ import com.e106.reco.domain.artist.entity.Region;
 import com.e106.reco.global.auth.dto.JoinDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
@@ -16,7 +14,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @SuperBuilder
 @NoArgsConstructor
@@ -56,8 +53,18 @@ public class User extends Artist {
         newUser.modifyPosition(Position.of(joinDto.getPosition()));
 
         newUser.modifyNickname(joinDto.getNickname());
-//        newUser.modifyProfileImage(joinDto.getProfileImage());
+        newUser.modifyProfileImage(joinDto.getProfileImage());
 
         return newUser;
+    }
+
+    public static void of(User user, JoinDto joinDto) {
+        user.modifyBirth(joinDto.getBirth());
+        user.modifyNickname(joinDto.getNickname());
+        user.modifyProfileImage(joinDto.getProfileImage());
+        user.modifyContent(joinDto.getContent());
+        user.modifyRegion(Region.of(joinDto.getRegion()));
+        user.modifyGenre(Genre.of(joinDto.getGenre()));
+        user.modifyPosition(Position.of(joinDto.getPosition()));
     }
 }

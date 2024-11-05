@@ -1,8 +1,10 @@
 package com.e106.reco.domain.artist.crew.entity;
 
 import com.e106.reco.domain.artist.crew.dto.CreateDto;
+import com.e106.reco.domain.artist.crew.dto.CrewDto;
 import com.e106.reco.domain.artist.entity.Artist;
 import com.e106.reco.domain.artist.entity.Genre;
+import com.e106.reco.domain.artist.entity.Position;
 import com.e106.reco.domain.artist.entity.Region;
 import com.e106.reco.domain.artist.user.entity.User;
 import jakarta.persistence.Entity;
@@ -31,18 +33,23 @@ public class Crew extends Artist {
     }
 
     public static Crew of(CreateDto createDto) {
-        Crew newCrew = Crew.builder()
+        return Crew.builder()
+                .position(Position.CREW)
+                .region(Region.of(createDto.getRegion()))
+                .genre(Genre.of(createDto.getGenre()))
+
+                .birth(createDto.getBirth())
+                .nickname(createDto.getNickname())
+                .content(createDto.getContent())
+                .profileImage(createDto.getProfileImage())
                 .build();
-
-        newCrew.modifyRegion(Region.of(createDto.getRegion()));
-        newCrew.modifyGenre(Genre.of(createDto.getGenre()));
-
-        newCrew.modifyBirth(createDto.getBirth());
-        newCrew.modifyNickname(createDto.getNickname());
-        newCrew.modifyContent(createDto.getContent());
-
-//        newCrew.modifyProfileImage(createDto.getProfileImage());
-
-        return newCrew;
+    }
+    public static void of(Crew crew, CrewDto crewDto) {
+        crew.modifyGenre(Genre.of(crewDto.getGenre()));
+        crew.modifyRegion(Region.of(crewDto.getRegion()));
+        crew.modifyBirth(crewDto.getBirth());
+        crew.modifyNickname(crewDto.getNickname());
+        crew.modifyContent(crewDto.getContent());
+        crew.modifyProfileImage(crewDto.getProfileImage());
     }
 }
