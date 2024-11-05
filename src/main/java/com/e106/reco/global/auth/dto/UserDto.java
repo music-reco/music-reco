@@ -4,6 +4,7 @@ import com.e106.reco.domain.artist.entity.Genre;
 import com.e106.reco.domain.artist.entity.Position;
 import com.e106.reco.domain.artist.entity.Region;
 import com.e106.reco.domain.artist.user.entity.Gender;
+import com.e106.reco.domain.artist.user.entity.UserStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,6 +20,7 @@ import java.time.LocalDate;
 @Builder
 public class UserDto {
     private Long seq;
+
     private String email;
     private String password;
     private String name;
@@ -32,5 +34,8 @@ public class UserDto {
     private Position position;
     private Genre genre;
 
+    private String content;
     private String profileImage;
+
+    private UserStatus status;
 }

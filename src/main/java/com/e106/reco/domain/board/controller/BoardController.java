@@ -25,8 +25,7 @@ public class BoardController {
             @RequestParam(value = "files", required = false) List<MultipartFile> files,
             @RequestParam(value = "title") String title,
             @RequestParam(value = "state") String state,
-            @RequestParam(value = "content") String content
-    ){
+            @RequestParam(value = "content") String content){
         for (MultipartFile file : files) {
             System.out.println("file = " + file);
         }

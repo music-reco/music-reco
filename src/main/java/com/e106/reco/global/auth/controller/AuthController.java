@@ -1,8 +1,8 @@
 package com.e106.reco.global.auth.controller;
 
+import com.e106.reco.domain.artist.user.controller.UserController;
 import com.e106.reco.global.auth.dto.JoinDto;
 import com.e106.reco.global.auth.dto.MailDto;
-import com.e106.reco.global.auth.dto.UserInfoDto;
 import com.e106.reco.global.auth.service.AuthService;
 import com.e106.reco.global.auth.token.service.TokenService;
 import com.e106.reco.global.common.CommonResponse;
@@ -17,7 +17,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
 @RestController
@@ -26,14 +29,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
     private final AuthService authService;
     private final TokenService tokenService;
+    private final UserController userController;
 
-    @GetMapping
-    public ResponseEntity<UserInfoDto> userInfo() {
-        return ResponseEntity.ok(authService.getInfo());
-    }
     @PostMapping("/join")
-    public ResponseEntity<CommonResponse> join(@RequestBody @Valid JoinDto joinDto){
-        return ResponseEntity.ok(authService.join(joinDto));
+    public ResponseEntity<CommonResponse> join(@RequestPart @Valid JoinDto joinDto,
+                                               @RequestParam(value = "profile", required = false) MultipartFile file){
+        return ResponseEntity.ok(authService.join(joinDto, file));
     }
 
     @PostMapping("/email")

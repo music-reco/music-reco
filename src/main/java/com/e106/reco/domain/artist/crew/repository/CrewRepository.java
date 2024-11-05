@@ -7,8 +7,8 @@ import java.util.Optional;
 
 public interface CrewRepository extends JpaRepository<Crew, Long> {
     Optional<Crew> findBySeq(Long Seq);
+    Optional<Crew> findBySeqAndManagerSeq(Long Seq, Long ManagerSeq);
 
     boolean existsBySeqAndManagerSeq(Long Seq, Long ManagerSeq);
-
     boolean existsBySeq(Long crewSeq);
 }
