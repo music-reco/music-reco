@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -27,7 +27,7 @@ public class UserController {
         return ResponseEntity.ok(userService.getInfo());
     }
 
-    @PutMapping
+    @PostMapping
     public ResponseEntity<UserInfoDto> userInfo(@RequestPart @Valid JoinDto userDto, @RequestParam(value = "profile", required = false) MultipartFile file) {
         return ResponseEntity.ok(userService.updateInfo(userDto, file));
     }
