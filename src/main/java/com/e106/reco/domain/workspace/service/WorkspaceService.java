@@ -58,11 +58,11 @@ public class WorkspaceService {
         return workspaceRepository.save(workspace).getSeq();
     }
 
-    public Long divide(Long artistSeq, WorkspaceRequest workspaceRequest, MultipartFile sound) {
-
-        // 나누는 api 아마 비동기 메서드 따로 뺴야할듯.
-
-    }
+//    public Long divide(Long artistSeq, WorkspaceRequest workspaceRequest, MultipartFile sound) {
+//
+//        // 나누는 api 아마 비동기 메서드 따로 뺴야할듯.
+//
+//    }
 
     @Transactional(readOnly = true)
     public List<WorkspaceResponse> getWorkspaceList(Long artistSeq, Pageable pageable) {
@@ -110,13 +110,13 @@ public class WorkspaceService {
         return newSeq;
     }
 
-    public CommonResponse modifyThumbnail(Long workspaceSeq, MultipartFile file) {
-        Workspace workspace = getWorkspace(workspaceSeq);
-
-        workspace
-
-        s3FileService.
-    }
+//    public CommonResponse modifyThumbnail(Long workspaceSeq, MultipartFile file) {
+//        Workspace workspace = getWorkspace(workspaceSeq);
+//
+//        workspace
+//
+//        s3FileService.
+//    }
 
     public CommonResponse modifyPoint(Long workspaceSeq, List<ModifyPoint> modifyPoints) {
         Workspace workspace = getWorkspace(workspaceSeq);
@@ -124,13 +124,13 @@ public class WorkspaceService {
         Map<Long, Sound> sounds = getSounds(workspaceSeq).stream()
                 .collect(Collectors.toMap(Sound::getSeq, Function.identity()));
 
-        modifyPoints.forEach(modifyPoint -> {
-            Sound sound = sounds.getOrDefault(modifyPoint.getSoundSeq(),
+//        modifyPoints.forEach(modifyPoint -> {
+//            Sound sound = sounds.getOrDefault(modifyPoint.getSoundSeq(),
 //                    Sound.builder()
 //                                    .startPoint(p)
 //                            build());
 //            sound.modifyPoint(modifyPoint);
-        });
+//        });
         return new CommonResponse("ok");
     }
 
