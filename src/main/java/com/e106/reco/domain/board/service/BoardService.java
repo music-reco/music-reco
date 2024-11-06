@@ -39,7 +39,7 @@ public class BoardService {
                 .orElseThrow(()-> new BusinessException(ARTIST_NOT_FOUND));
 
 //        if( artist.getPosition() == Position.CREW ) {
-//            crewUserRepository.findBy()
+//            CrewUser crewUser = crewUserRepository.find(boardRequestDto.getArtistSeq(), user.getSeq())
 //        }
 
         if(files.size()> FILE_SIZE) throw new BusinessException(BoardErrorCode.BOARD_SOURCE_ONLY_15);

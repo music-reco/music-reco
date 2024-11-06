@@ -23,4 +23,5 @@ public interface CrewUserRepository extends JpaRepository<CrewUser, CrewUser.PK>
     List<Long> findPk_CrewSeqByPk_userSeq(@Param("userSeq")Long userSeq);
 
     Optional<CrewUser> findByPkAndState(CrewUser.PK pk, CrewUserState state);
+
 }

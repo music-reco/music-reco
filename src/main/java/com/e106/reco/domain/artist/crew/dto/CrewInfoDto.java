@@ -34,8 +34,8 @@ public class CrewInfoDto {
                 .nickname(crew.getNickname())
                 .content(crew.getContent())
                 .birth(crew.getBirth())
-                .region(crew.getRegion().name())
-                .genre(crew.getGenre().name())
+                .region(crew.getRegion().getName())
+                .genre(crew.getGenre().getName())
                 .profileImage(crew.getProfileImage())
                 .crews(crewUsers.stream().map(crewUser -> UserSummaryDto.of(crewUser.getUser())).collect(Collectors.toList()))
                 .build();

@@ -3,7 +3,6 @@ package com.e106.reco.domain.artist.user.controller;
 import com.e106.reco.domain.artist.user.dto.UserInfoDto;
 import com.e106.reco.domain.artist.user.service.UserService;
 import com.e106.reco.global.auth.dto.JoinDto;
-import com.e106.reco.global.common.CommonResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +28,7 @@ public class UserController {
     }
 
     @PutMapping
-    public ResponseEntity<CommonResponse> userInfo(@RequestPart @Valid JoinDto userDto, @RequestParam(value = "profile", required = false) MultipartFile file) {
-        return ResponseEntity.ok(userService.updateUserInfo(userDto, file));
+    public ResponseEntity<UserInfoDto> userInfo(@RequestPart @Valid JoinDto userDto, @RequestParam(value = "profile", required = false) MultipartFile file) {
+        return ResponseEntity.ok(userService.updateInfo(userDto, file));
     }
 }

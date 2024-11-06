@@ -11,11 +11,9 @@ import com.e106.reco.domain.artist.user.repository.MailRepository;
 import com.e106.reco.domain.artist.user.repository.UserRepository;
 import com.e106.reco.global.auth.dto.JoinDto;
 import com.e106.reco.global.auth.dto.MailDto;
-import com.e106.reco.domain.artist.user.dto.UserInfoDto;
 import com.e106.reco.global.common.CommonResponse;
 import com.e106.reco.global.error.exception.BusinessException;
 import com.e106.reco.global.s3.S3FileService;
-import com.e106.reco.global.util.AuthUtil;
 import jakarta.annotation.PostConstruct;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
@@ -41,7 +39,6 @@ import static com.e106.reco.global.error.errorcode.AuthErrorCode.EMAIL_EXPIRED;
 import static com.e106.reco.global.error.errorcode.AuthErrorCode.EMAIL_INVALID;
 import static com.e106.reco.global.error.errorcode.AuthErrorCode.EMAIL_NOT_SENT;
 import static com.e106.reco.global.error.errorcode.AuthErrorCode.USER_EXIST;
-import static com.e106.reco.global.error.errorcode.AuthErrorCode.USER_NOT_FOUND;
 import static com.e106.reco.global.util.RandomHelper.USER_AUTH_MAIL_TITLE;
 import static com.e106.reco.global.util.RandomHelper.generateRandomMailAuthenticationCode;
 import static com.e106.reco.global.util.RandomHelper.getEmailAuthContent;
@@ -81,14 +78,6 @@ public class AuthService implements UserDetailsService {
                         .content("Hi everyone")
                         .profileImage(configProfile)
                 .build());
-    }
-
-    public UserInfoDto getInfo() {
-        User user = userRepository.findBySeq(AuthUtil.getCustomUserDetails().getSeq())
-                .orElseThrow(() -> new BusinessException(USER_NOT_FOUND));
-        List<Long> crews = crewUserRepository.findPk_CrewSeqByPk_userSeq(user.getSeq());
-        log.info(user.getNickname());
-        return UserInfoDto.of(user,crews);
     }
 
     public CommonResponse join(JoinDto joinDto, MultipartFile file) {

@@ -1,6 +1,5 @@
 package com.e106.reco.domain.artist.user.dto;
 
-import com.e106.reco.domain.artist.user.entity.Gender;
 import com.e106.reco.domain.artist.user.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,7 +20,7 @@ public class UserInfoDto {
     private String email;
     private String name;
 
-    private Gender gender;
+    private String gender;
 
     private LocalDate birth;
     private String nickname;
@@ -41,12 +40,12 @@ public class UserInfoDto {
                 .seq(user.getSeq())
                 .email(user.getEmail())
                 .name(user.getName())
-                .gender(user.getGender())
+                .gender(user.getGender().getName())
                 .birth(user.getBirth())
                 .nickname(user.getNickname())
-                .genre(user.getGenre().name())
-                .region(user.getRegion().name())
-                .position(user.getPosition().name())
+                .genre(user.getGenre().getName())
+                .region(user.getRegion().getName())
+                .position(user.getPosition().getName())
                 .profileImage(user.getProfileImage())
                 .content(user.getContent())
                 .crews(crews).build();
