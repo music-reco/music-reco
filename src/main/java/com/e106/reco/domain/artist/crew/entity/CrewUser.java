@@ -5,6 +5,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
@@ -40,6 +42,7 @@ public class CrewUser{
     @JoinColumn(name = "user_seq")
     private User user;
 
+    @Enumerated(EnumType.STRING)
     @Builder.Default
     private CrewUserState state = CrewUserState.WAITING;
 
@@ -57,22 +60,10 @@ public class CrewUser{
         private Long userSeq;
 
     }
-    public void grantChat(CrewUserState state){
-        if(state == CrewUserState.ALL || state == CrewUserState.BOARD) this.state = CrewUserState.ALL;
-        else this.state = CrewUserState.CHAT;
+    public void modifyState(CrewUserState state){
+        this.state = state;
     }
-    public void revokeChat(CrewUserState state){
-        if(state == CrewUserState.ALL) this.state = CrewUserState.BOARD;
-        else this.state = CrewUserState.NONE;
-    }
-    public void grantBoard(CrewUserState state){
-        if(state == CrewUserState.ALL || state == CrewUserState.CHAT) this.state = CrewUserState.ALL;
-        else this.state = CrewUserState.BOARD;
-    }
-    public void revokeBoard(CrewUserState state){
-        if(state == CrewUserState.ALL) this.state = CrewUserState.CHAT;
-        else this.state = CrewUserState.NONE;
-    }
+
     public void acceptCrew(CrewUserState state){
         if(state == CrewUserState.WAITING) this.state = CrewUserState.NONE;
     }

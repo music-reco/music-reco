@@ -79,7 +79,7 @@ public class AuthService implements UserDetailsService {
                         .genre(Genre.BALAD)
                         .region(Region.BS)
                         .content("Hi everyone")
-//                        .profileImage()
+                        .profileImage(configProfile)
                 .build());
     }
 

@@ -7,6 +7,8 @@ import com.e106.reco.domain.artist.entity.Region;
 import com.e106.reco.global.auth.dto.JoinDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
@@ -29,9 +31,11 @@ public class User extends Artist {
     private String password;
     private String name;
 
+    @Enumerated(EnumType.STRING)
     private Gender gender;
 
     @Builder.Default
+    @Enumerated(EnumType.STRING)
     private UserStatus status = UserStatus.ACTIVE;
 
     public void modifyPassword(String password) {

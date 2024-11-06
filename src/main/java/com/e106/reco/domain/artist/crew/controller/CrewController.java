@@ -4,6 +4,7 @@ import com.e106.reco.domain.artist.crew.dto.CreateDto;
 import com.e106.reco.domain.artist.crew.dto.CrewChangeDto;
 import com.e106.reco.domain.artist.crew.dto.CrewDto;
 import com.e106.reco.domain.artist.crew.dto.CrewGrantDto;
+import com.e106.reco.domain.artist.crew.dto.CrewInfoDto;
 import com.e106.reco.domain.artist.crew.dto.CrewRoleDto;
 import com.e106.reco.domain.artist.crew.service.CrewService;
 import com.e106.reco.global.common.CommonResponse;
@@ -46,6 +47,11 @@ public class CrewController {
         return ResponseEntity.ok(crewService.updateCrew(crewSeq, crewDto, file));
     }
 
+    @GetMapping("/{crewSeq}")
+    public ResponseEntity<CrewInfoDto> infoCrew(@PathVariable(value = "crewSeq") Long crewSeq){
+        return ResponseEntity.ok(crewService.infoCrew(crewSeq));
+    }
+
     @PostMapping("/join")
     public ResponseEntity<CommonResponse> joinCrew(@RequestBody @Valid CrewDto joinDto) {
         return ResponseEntity.ok(crewService.joinCrew(joinDto));
@@ -66,9 +72,11 @@ public class CrewController {
         return ResponseEntity.ok(crewService.leaveCrew(leaveDto));
     }
 
-    @PutMapping("/grant")
-    public ResponseEntity<List<CrewRoleDto>> grantCrew(@RequestBody @Valid CrewGrantDto crewGrantDto){
-        return ResponseEntity.ok(crewService.grantCrew(crewGrantDto));
+    @PutMapping("/grant/{crewSeq}")
+    public ResponseEntity<List<CrewRoleDto>> grantCrew(
+            @PathVariable Long crewSeq,
+            @RequestBody @Valid CrewGrantDto crewGrantDto){
+        return ResponseEntity.ok(crewService.grantCrew(crewSeq, crewGrantDto));
     }
 
     @GetMapping("/grant/{crewSeq}")

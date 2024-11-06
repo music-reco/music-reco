@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static com.e106.reco.global.error.errorcode.S3ErrorCode.FILE_EXE_ERROR;
 import static com.e106.reco.global.error.errorcode.S3ErrorCode.FILE_NAME_ERROR;
 import static com.e106.reco.global.error.errorcode.S3ErrorCode.FILE_UPLOAD_ERROR;
 
@@ -127,9 +128,7 @@ public class S3FileService {
         fileValidate.add(".wav");
 
         String idxFileName = fileName.substring(fileName.lastIndexOf("."));
-        if(!fileValidate.contains(idxFileName)){
-            // todo : 여기도 대충 에러 던지기 : 형식이 맞지않음
-        }
+        if(!fileValidate.contains(idxFileName)) throw new BusinessException(FILE_EXE_ERROR);
         return idxFileName;
     }
 

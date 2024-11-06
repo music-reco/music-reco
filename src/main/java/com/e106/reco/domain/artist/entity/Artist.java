@@ -2,6 +2,8 @@ package com.e106.reco.domain.artist.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -35,9 +37,14 @@ public class Artist {
     private LocalDate birth;
     private String nickname;
 
+    @Enumerated(EnumType.STRING)
     @Builder.Default()
     private Position position = CREW;
+
+    @Enumerated(EnumType.STRING)
     private Region region;
+
+    @Enumerated(EnumType.STRING)
     private Genre genre;
 
     private String profileImage;
