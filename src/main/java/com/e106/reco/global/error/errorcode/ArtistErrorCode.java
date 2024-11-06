@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum ArtistErrorCode implements ErrorCode {
+    ARTIST_NOT_FOUND(HttpStatus.BAD_REQUEST, "아티스트를 찾지 못했습니다."),
     GENDER(HttpStatus.BAD_REQUEST, "성별값이 입력되지 않았거나 여성/남성/기타가 아닙니다"),
     POSITION(HttpStatus.BAD_REQUEST, "포지션이 입력되지 않았거나 데이터베이스 내 값이 아닙니다"),
     REGION(HttpStatus.BAD_REQUEST, "지역이 입력되지 않았거나 데이터베이스 내 값이 아닙니다"),
