@@ -5,7 +5,6 @@ import com.e106.reco.domain.artist.user.dto.UserInfoDto;
 import com.e106.reco.domain.artist.user.entity.User;
 import com.e106.reco.domain.artist.user.repository.UserRepository;
 import com.e106.reco.global.auth.dto.JoinDto;
-import com.e106.reco.global.common.CommonResponse;
 import com.e106.reco.global.error.exception.BusinessException;
 import com.e106.reco.global.s3.S3FileService;
 import com.e106.reco.global.util.AuthUtil;
@@ -32,24 +31,26 @@ public class UserService {
     @Value("${spring.image.profile.user}")
     private String configProfile;
 
+    @Transactional(readOnly = true)
     public UserInfoDto getInfo() {
         User user = userRepository.findBySeq(AuthUtil.getCustomUserDetails().getSeq())
                 .orElseThrow(() -> new BusinessException(USER_NOT_FOUND));
+        return getUserInfo(user);
+    }
+
+    public UserInfoDto getUserInfo(User user) {
         List<Long> crews = crewUserRepository.findPk_CrewSeqByPk_userSeq(user.getSeq());
-        log.info(user.getNickname());
         return UserInfoDto.of(user,crews);
     }
 
-    public CommonResponse updateUserInfo(JoinDto joinDto, MultipartFile file) {
+    public UserInfoDto updateInfo(JoinDto joinDto, MultipartFile file) {
         User user = userRepository.findBySeq(AuthUtil.getCustomUserDetails().getSeq())
                 .orElseThrow(() -> new BusinessException(USER_NOT_FOUND));
 
         joinDto.setProfileImage(file == null ? configProfile : s3FileService.uploadFile(file));
-
         User.of(user, joinDto);
-        userRepository.save(user);
 
-        return new CommonResponse("회원 정보 수정 완료");
+        return getUserInfo(user);
     }
 }
 

@@ -3,10 +3,12 @@ package com.e106.reco.domain.artist.entity;
 import com.e106.reco.global.error.errorcode.ArtistErrorCode;
 import com.e106.reco.global.error.exception.BusinessException;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.util.stream.Stream;
 
+@Getter
 @RequiredArgsConstructor
 public enum Region {
     SU("서울"), BS("부산"), DG("대구"), GJ("광주"), DJ("대전"), US("울산"), IC("인천"), JJ("제주"),

@@ -50,8 +50,6 @@ public class Artist {
     private String profileImage;
     private String content;
 
-    public void modifySeq(Long seq) { this.seq = seq; }
-
     public void modifyNickname(String nickname) {
         this.nickname = nickname;
     }
@@ -63,10 +61,7 @@ public class Artist {
     public void modifyPosition(Position position) {
         this.position = position;
     }
-    public void modifyGenre(Genre genre) {
-        this.genre = genre;
-    }
-
+    public void modifyGenre(Genre genre) { this.genre = genre; }
     public void modifyContent(String content) {
         this.content = content;
     }
