@@ -4,6 +4,7 @@ import com.e106.reco.domain.artist.crew.dto.CreateDto;
 import com.e106.reco.domain.artist.crew.dto.CrewChangeDto;
 import com.e106.reco.domain.artist.crew.dto.CrewDto;
 import com.e106.reco.domain.artist.crew.dto.CrewGrantDto;
+import com.e106.reco.domain.artist.crew.dto.CrewInfoDto;
 import com.e106.reco.domain.artist.crew.dto.CrewRoleDto;
 import com.e106.reco.domain.artist.crew.entity.Crew;
 import com.e106.reco.domain.artist.crew.entity.CrewUser;
@@ -11,6 +12,7 @@ import com.e106.reco.domain.artist.crew.entity.CrewUserState;
 import com.e106.reco.domain.artist.crew.repository.CrewRepository;
 import com.e106.reco.domain.artist.crew.repository.CrewUserRepository;
 import com.e106.reco.domain.artist.user.dto.CustomUserDetails;
+import com.e106.reco.domain.artist.user.dto.UserSummaryDto;
 import com.e106.reco.domain.artist.user.entity.User;
 import com.e106.reco.domain.artist.user.repository.UserRepository;
 import com.e106.reco.global.common.CommonResponse;
@@ -25,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.e106.reco.global.error.errorcode.AuthErrorCode.USER_NOT_FOUND;
@@ -59,49 +62,33 @@ public class CrewService {
         return getCrewRoles(crewSeq);
     }
 
-    public List<CrewRoleDto> grantCrew(CrewGrantDto crewGrantDto) {
+    public List<CrewRoleDto> grantCrew(Long crewSeq, CrewGrantDto crewGrantDto) {
         CustomUserDetails userDetails = AuthUtil.getCustomUserDetails();
 
-        if(!crewRepository.existsBySeqAndManagerSeq(crewGrantDto.getCrewSeq(), userDetails.getSeq()))
-            throw new BusinessException(USER_NOT_MASTER);
+        Map<Long, CrewGrantDto.UserCrewDto> crews
+                = crewGrantDto.getCrews().stream().collect(Collectors.toMap(CrewGrantDto.UserCrewDto::getUserSeq, userCrewDto -> userCrewDto));
 
         if(crewGrantDto.getCrews().stream()
-                .filter(crew -> crew.getState()== CrewUserState.ALL || crew.getState() == CrewUserState.CHAT)
+                .filter(crew -> crew.getState() == CrewUserState.ALL || crew.getState() == CrewUserState.CHAT)
                 .count()>1)
             throw new BusinessException(GRANT_CHAT_ONLY_ONE);
 
-        if(crewGrantDto.getCrews().stream()
-                .anyMatch(crew -> crew.getState() == CrewUserState.WAITING))
+        if(crewGrantDto.getCrews().stream().anyMatch(crew -> crew.getState() == CrewUserState.WAITING))
             throw new BusinessException(USER_ALREADY_JOIN);
 
-        if(crewUserRepository.countCrewUsers(crewGrantDto.getCrewSeq(),
-                    crewGrantDto.getCrews().stream()
-                            .map(CrewRoleDto::getUserSeq)
-                            .collect(Collectors.toList()))
-                != crewGrantDto.getCrews().size())
-            throw new BusinessException(CREW_USER_NOT_FOUND);
+        if(!crewRepository.existsBySeqAndManagerSeq(crewSeq, userDetails.getSeq()))
+            throw new BusinessException(USER_NOT_MASTER);
 
-        List<CrewUser> crewUsers = crewGrantDto.getCrews().stream()
-                        .map(crewRoleDto -> CrewUser.builder()
-                                .pk(CrewUser.PK.builder()
-                                        .crewSeq(crewGrantDto.getCrewSeq())
-                                        .userSeq(crewRoleDto.getUserSeq())
-                                        .build())
-                                .crew(Crew.builder()
-                                        .seq(crewGrantDto.getCrewSeq())
-                                        .build())
-                                .user(User.builder()
-                                        .seq(crewRoleDto.getUserSeq())
-                                        .build())
-                                .state(crewRoleDto.getState())
-                                .build()
-                        ).toList();
+        List<CrewUser> crewUsers = crewUserRepository.findCrewUsersByCrewSeqWithoutMaster(crewSeq, userDetails.getSeq());
 
+        if(crewUsers.size() != crews.size()) throw new BusinessException(CREW_USER_NOT_FOUND);
 
-        crewUserRepository.deleteAllByCrewWithoutMaster(crewGrantDto.getCrewSeq(), userDetails.getSeq());
-        crewUserRepository.saveAll(crewUsers);
+        for(CrewUser crewUser : crewUsers){
+            if(!crews.containsKey(crewUser.getPk().getUserSeq())) throw new BusinessException(CREW_USER_NOT_FOUND);
+            crewUser.modifyState(crews.get(crewUser.getPk().getUserSeq()).getState());
+        }
 
-        return getCrewRoles(crewGrantDto.getCrewSeq());
+        return getCrewRoles(crewSeq);
     }
     public List<CrewRoleDto> getCrewRoles(Long crewSeq) {
         Crew crew = crewRepository.findBySeq(crewSeq)
@@ -110,7 +97,7 @@ public class CrewService {
         List<CrewUser> crewUsers = crewUserRepository.findCrewUsersByCrewSeqWithoutMaster(crewSeq, crew.getManager().getSeq());
 
         return crewUsers.stream().map(crewUser -> CrewRoleDto.builder()
-                        .userSeq(crewUser.getPk().getUserSeq())
+                        .user(UserSummaryDto.of(crewUser.getUser()))
                         .state(crewUser.getState())
                         .build())
                 .collect(Collectors.toList());
@@ -215,9 +202,15 @@ public class CrewService {
 
         CrewUser crewUser = CrewUser.of(user, crewRepository.save(crew));
         crewUser = crewUserRepository.save(crewUser);
-        crewUser.grantBoard(crewUser.getState());
-        crewUser.grantChat(crewUser.getState());
+        crewUser.modifyState(CrewUserState.ALL);
 
         return new CommonResponse("크루 생성 완료");
+    }
+
+    public CrewInfoDto infoCrew(Long crewSeq) {
+        Crew crew = crewRepository.findBySeq(crewSeq).orElseThrow(()->new BusinessException(CREW_NOT_FOUND));
+        List<CrewUser> crewUsers = crewUserRepository.findCrewUsersByCrewSeqWithoutMaster(crewSeq, crew.getManager().getSeq());
+
+        return CrewInfoDto.of(crew, crewUsers);
     }
 }
