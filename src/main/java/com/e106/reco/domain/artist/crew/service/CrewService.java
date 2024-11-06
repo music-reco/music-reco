@@ -190,11 +190,11 @@ public class CrewService {
         crewUserRepository.delete(crewUser);
         return new CommonResponse("크루 탈퇴가 완료되었습니다.");
     }
-    public CommonResponse updateCrew (CrewDto crewDto, MultipartFile file) {
+    public CommonResponse updateCrew (Long crewSeq, CreateDto crewDto, MultipartFile file) {
         CustomUserDetails userDetails = AuthUtil.getCustomUserDetails();
         User user = userRepository.findBySeq(userDetails.getSeq())
                 .orElseThrow(()->new BusinessException(USER_NOT_FOUND));
-        Crew crew = crewRepository.findBySeqAndManagerSeq(crewDto.getCrewSeq(), user.getSeq())
+        Crew crew = crewRepository.findBySeqAndManagerSeq(crewSeq, user.getSeq())
                 .orElseThrow(()->new BusinessException(CREW_NOT_FOUND));
 
         crewDto.setProfileImage(file==null ? configProfile : s3FileService.uploadFile(file));

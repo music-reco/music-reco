@@ -39,10 +39,11 @@ public class CrewController {
         return ResponseEntity.ok(crewService.createCrew(createDto, file));
     }
 
-    @PutMapping
-    public ResponseEntity<CommonResponse> updateCrew(@RequestPart @Valid CrewDto crewDto,
+    @PostMapping("/{crewSeq}")
+    public ResponseEntity<CommonResponse> updateCrew(@PathVariable(value = "crewSeq") Long crewSeq,
+                                                     @RequestPart @Valid CreateDto crewDto,
                                                      @RequestParam(value = "profile", required = false) MultipartFile file){
-        return ResponseEntity.ok(crewService.updateCrew(crewDto, file));
+        return ResponseEntity.ok(crewService.updateCrew(crewSeq, crewDto, file));
     }
 
     @PostMapping("/join")

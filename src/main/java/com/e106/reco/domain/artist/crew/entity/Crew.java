@@ -44,7 +44,7 @@ public class Crew extends Artist {
                 .profileImage(createDto.getProfileImage())
                 .build();
     }
-    public static void of(Crew crew, CrewDto crewDto) {
+    public static void of(Crew crew, CreateDto crewDto) {
         crew.modifyGenre(Genre.of(crewDto.getGenre()));
         crew.modifyRegion(Region.of(crewDto.getRegion()));
         crew.modifyBirth(crewDto.getBirth());
