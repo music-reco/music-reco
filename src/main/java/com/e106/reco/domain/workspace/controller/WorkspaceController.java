@@ -35,12 +35,12 @@ public class WorkspaceController {
         return ResponseEntity.ok(workspaceService.create(artistSeq, workspaceRequest));
     }
 
-    @PostMapping("/artists/{artistSeq}/workspaces/divide")
-    public ResponseEntity<Long> divide(@PathVariable Long artistSeq,
-                                       @RequestBody WorkspaceRequest workspaceRequest,
-                                       @RequestParam(name = "sound") MultipartFile sound) {
-        return ResponseEntity.ok(workspaceService.divide(artistSeq, workspaceRequest, sound));
-    }
+//    @PostMapping("/artists/{artistSeq}/workspaces/divide")
+//    public ResponseEntity<Long> divide(@PathVariable Long artistSeq,
+//                                       @RequestBody WorkspaceRequest workspaceRequest,
+//                                       @RequestParam(name = "sound") MultipartFile sound) {
+//        return ResponseEntity.ok(workspaceService.divide(artistSeq, workspaceRequest, sound));
+//    }
 
     @GetMapping("/artists/{artistSeq}/workspaces")
     public ResponseEntity<List<WorkspaceResponse>> getAllWorkspaces(@PathVariable Long artistSeq,
@@ -53,25 +53,25 @@ public class WorkspaceController {
         return ResponseEntity.ok(workspaceService.getWorkspaceDetail(workspaceSeq));
     }
 
-    @GetMapping("/workspaces/{workspaceSeq}")
+    @GetMapping("/workspaces/{workspaceSeq}/fork")
     public ResponseEntity<Long> fork(@PathVariable Long workspaceSeq) {
         return ResponseEntity.ok(workspaceService.fork(workspaceSeq));
     }
 
 
-    @PostMapping("/workspaces/{workspaceSeq}/thumbnail")
-    public ResponseEntity<CommonResponse> modifyThumbnail(@PathVariable Long workspaceSeq,
-                                                          @RequestParam(value = "file", required = false) MultipartFile file) {
-        return workspaceService.modifyThumbnail(workspaceSeq, file);
-    }
+//    @PostMapping("/workspaces/{workspaceSeq}/thumbnail")
+//    public ResponseEntity<CommonResponse> modifyThumbnail(@PathVariable Long workspaceSeq,
+//                                                          @RequestParam(value = "file", required = false) MultipartFile file) {
+//        return workspaceService.modifyThumbnail(workspaceSeq, file);
+//    }
 
-    @PostMapping("/workspaces/{workspaceSeq}/thumbnail")
+    @PostMapping("/workspaces/{workspaceSeq}/point")
     public ResponseEntity<CommonResponse> modifyPoint(@PathVariable Long workspaceSeq,
                                                       @RequestBody List<ModifyPoint> modifyPoints) {
         return ResponseEntity.ok(workspaceService.modifyPoint(workspaceSeq, modifyPoints));
     }
 
-    @PostMapping("/workspaces/{workspaceSeq}/thumbnail")
+    @PostMapping("/workspaces/{workspaceSeq}/state")
     public ResponseEntity<CommonResponse> modifyState(@PathVariable Long workspaceSeq,
                                                       @RequestBody ModifyState modifyState) {
         return ResponseEntity.ok(workspaceService.modifyState(workspaceSeq, modifyState));
