@@ -14,12 +14,18 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+
+import java.time.LocalDateTime;
 
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Getter
 @Table(name = "boards")
 public class Board {
 
@@ -35,12 +41,20 @@ public class Board {
     @Size(min = 1, max = 255)
     private String title;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private BoardState state;
+
+    private BoardState state = BoardState.PUBLIC;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
+
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 
     @Column
     private String thumbnail;
@@ -48,4 +62,6 @@ public class Board {
     public void changeThumbnail(String thumbnail) {
         this.thumbnail = thumbnail;
     }
+
+
 }

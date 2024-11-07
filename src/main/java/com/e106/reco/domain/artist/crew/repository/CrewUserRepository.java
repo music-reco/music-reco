@@ -24,4 +24,5 @@ public interface CrewUserRepository extends JpaRepository<CrewUser, CrewUser.PK>
 
     Optional<CrewUser> findByPkAndState(CrewUser.PK pk, CrewUserState state);
 
+    Optional<CrewUser> findCrewUserByPk(CrewUser.PK pk);
 }
