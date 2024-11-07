@@ -22,7 +22,7 @@ public class CorsConfig {
         config.addAllowedOrigin("https://k11e106.p.ssafy.io");
         config.addAllowedHeader("*");
         config.setExposedHeaders(Arrays.asList("Authorization"));
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
     }
