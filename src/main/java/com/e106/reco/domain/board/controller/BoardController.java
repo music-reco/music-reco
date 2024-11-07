@@ -31,7 +31,7 @@ public class BoardController {
     @PostMapping(value = "/boards", consumes = "multipart/form-data")
     public ResponseEntity<CommonResponse> createBoard(
             @RequestPart @Valid BoardRequestDto boardRequestDto,
-            @RequestParam(value = "files", required = false) List<MultipartFile> files){
+            @RequestPart(value = "files", required = false) List<MultipartFile> files){
         return ResponseEntity.ok(boardService.createBoard(boardRequestDto, files));
     }
 
