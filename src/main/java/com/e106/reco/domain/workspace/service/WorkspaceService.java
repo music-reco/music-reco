@@ -187,7 +187,7 @@ public class WorkspaceService {
 
         Workspace workspace = getWorkspace(workspaceSeq, artistSeq);
 
-        String fileName = s3FileService.uploadFile(session);
+        String fileName = s3FileService.getFile(s3FileService.uploadFile(session));
 
         Sound sound = Sound.of(fileName, workspace.getSeq());
 
@@ -231,6 +231,7 @@ public class WorkspaceService {
                 .state(workspace.getState())
                 .sounds(sounds.stream().map(this::toSoundResponse).toList())
                 .role(role)
+                .thumbnail(s3FileService.getFile(workspace.getThumbnail()))
                 .createdAt(workspace.getCreatedAt())
                 .updatedAt(workspace.getUpdatedAt())
                 .build();
@@ -241,6 +242,7 @@ public class WorkspaceService {
                 .workspaceSeq(workspace.getSeq())
                 .name(workspace.getName())
                 .state(workspace.getState())
+                .thumbnail(s3FileService.getFile(workspace.getThumbnail()))
                 .originTitle(workspace.getOriginTitle())
                 .originSinger(workspace.getOriginSinger())
                 .build();
@@ -251,6 +253,7 @@ public class WorkspaceService {
                 .soundSeq(sound.getSeq())
                 .startPoint(sound.getStartPoint())
                 .endPoint(sound.getEndPoint())
+                .url(sound.getUrl())
                 .type(sound.getType())
                 .build();
     }

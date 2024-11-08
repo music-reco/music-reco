@@ -14,5 +14,6 @@ public class SoundResponse {
     private Long soundSeq;
     private Double startPoint;
     private Double endPoint;
+    private String url;
     private SoundType type;
 }

@@ -8,6 +8,7 @@ import com.e106.reco.domain.workspace.dto.midify.ModifyPoint;
 import com.e106.reco.domain.workspace.dto.midify.ModifyState;
 import com.e106.reco.domain.workspace.service.WorkspaceService;
 import com.e106.reco.global.common.CommonResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -33,7 +34,7 @@ public class WorkspaceController {
     private final WorkspaceService workspaceService;
 
     @PostMapping("/workspaces")
-    public ResponseEntity<Long> createWorkspace(@RequestBody WorkspaceRequest workspaceRequest) {
+    public ResponseEntity<Long> createWorkspace(@RequestBody @Valid WorkspaceRequest workspaceRequest) {
         return ResponseEntity.ok(workspaceService.create(workspaceRequest));
     }
 
