@@ -87,7 +87,7 @@ public class WorkspaceService {
         if (role == WorkspaceRole.VIEWER && workspace.getState() != WorkspaceState.PUBLIC)
             throw new BusinessException(WorkspaceErrorCode.NOT_PUBLIC_WORKSPACE);
 
-        List<Sound> sounds = getSounds(artistSeq);
+        List<Sound> sounds = getSounds(workspaceSeq);
 
         return toDetailResponse(workspace, sounds, role);
 
@@ -155,8 +155,8 @@ public class WorkspaceService {
         return WorkspaceRole.VIEWER;
     }
 
-    private List<Sound> getSounds(Long artistSeq) {
-        return soundRepository.findAllByWorkspace_Seq(artistSeq);
+    private List<Sound> getSounds(Long workspaceSeq) {
+        return soundRepository.findAllByWorkspace_Seq(workspaceSeq);
     }
 
     private Workspace getWorkspace(Long workspaceSeq) {
