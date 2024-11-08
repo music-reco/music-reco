@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -30,6 +31,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -47,7 +49,7 @@ import static com.e106.reco.global.util.RandomHelper.getEmailAuthContent;
 @Service
 @Transactional
 @Slf4j
-public class AuthService implements UserDetailsService {
+public class AuthService implements UserDetailsService, ReactiveUserDetailsService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final MailRepository mailRepository;
     private final UserRepository userRepository;
@@ -150,6 +152,27 @@ public class AuthService implements UserDetailsService {
                 .crews(crews)
                 .role(null)
                 .build();
+
+    }
+
+    @Override
+    public Mono<UserDetails> findByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(IllegalArgumentException::new);
+        List<Long> crews = crewUserRepository.findPk_CrewSeqByPk_userSeq(user.getSeq());
+        return Mono.just(CustomUserDetails.builder()
+                .seq(user.getSeq())
+                .nickname(user.getNickname())
+                .password(user.getPassword())
+                .email(user.getEmail())
+                .genre(user.getGenre())
+                .year(String.valueOf(user.getBirth().getYear()))
+                .position(user.getPosition())
+                .region(user.getRegion())
+                .gender(user.getGender())
+                .crews(crews)
+                .role(null)
+                .build());
 
     }
 }
