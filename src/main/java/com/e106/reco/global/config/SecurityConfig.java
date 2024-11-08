@@ -6,6 +6,7 @@ import com.e106.reco.global.auth.jwt.LoginFilter;
 import com.e106.reco.global.auth.token.repository.TokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,6 +24,7 @@ import org.springframework.web.filter.CorsFilter;
 @Slf4j
 @RequiredArgsConstructor
 @Configuration
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @EnableWebSecurity
 public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
@@ -39,7 +41,7 @@ public class SecurityConfig {
         return web -> web
                 .ignoring()
                 .requestMatchers("/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs/**"
-                        ,"/actuator/**", "/images/**", "/js/**", "/css/**", "/ws/**");
+                        ,"/actuator/**", "/images/**", "/js/**", "/css/**", "/ws/**","/api/chats/**");
     }
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {

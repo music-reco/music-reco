@@ -10,9 +10,8 @@ spring:
 
   data:
     mongodb:
-      host: localhost
-      port: 27017
-      database: reco
+      uri: mongodb+srv://ADMIN:SSAFY123@reco.mv9rf.mongodb.net/RECO
+
 
 #  data:
 #    redis:
