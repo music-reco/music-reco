@@ -67,7 +67,8 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         List<Long> crews = new ArrayList<>();
-        if(jwtUtil.getCrews(token).length()>1)
+        if(jwtUtil.getCrews(token).length()== 1) crews.add(Long.parseLong(jwtUtil.getCrews(token)));
+        else if(jwtUtil.getCrews(token).length()>1)
             crews = Arrays.stream(jwtUtil.getCrews(token).split(" "))
                 .map(Long::parseLong)
                 .toList();

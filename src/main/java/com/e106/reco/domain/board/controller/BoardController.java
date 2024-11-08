@@ -2,6 +2,7 @@ package com.e106.reco.domain.board.controller;
 
 import com.e106.reco.domain.board.dto.BoardRequestDto;
 import com.e106.reco.domain.board.dto.BoardResponseDto;
+import com.e106.reco.domain.board.dto.BoardsResponseDto;
 import com.e106.reco.domain.board.dto.CommentRequestDto;
 import com.e106.reco.domain.board.service.BoardService;
 import com.e106.reco.global.common.CommonResponse;
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,7 +31,7 @@ public class BoardController {
     @PostMapping(value = "/boards", consumes = "multipart/form-data")
     public ResponseEntity<CommonResponse> createBoard(
             @RequestPart @Valid BoardRequestDto boardRequestDto,
-            @RequestPart(value = "files", required = false) List<MultipartFile> files){
+            @RequestPart (value = "files", required = false) List<MultipartFile> files){
         return ResponseEntity.ok(boardService.createBoard(boardRequestDto, files));
     }
 
@@ -48,6 +48,11 @@ public class BoardController {
     @GetMapping("/boards/{boardSeq}")
     public ResponseEntity<BoardResponseDto> getBoard(@PathVariable Long boardSeq){
         return ResponseEntity.ok(boardService.getBoard(boardSeq));
+    }
+
+    @GetMapping("/boards/artists/{artistSeq}")
+    public ResponseEntity<List<BoardsResponseDto>> getBoards(@PathVariable Long artistSeq){
+        return ResponseEntity.ok(boardService.getBoards(artistSeq));
     }
 
 }
