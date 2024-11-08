@@ -1,6 +1,7 @@
 package com.e106.reco.domain.workspace.entity;
 
 import com.e106.reco.domain.artist.entity.Artist;
+import com.e106.reco.domain.workspace.dto.WorkspaceRequest;
 import com.e106.reco.domain.workspace.entity.converter.WorkspaceState;
 import com.e106.reco.global.common.BaseTime;
 import jakarta.persistence.Column;
@@ -61,6 +62,18 @@ public class Workspace extends BaseTime {
 
     public void modifyThumbnail(String thumbnail) {
         this.thumbnail = thumbnail;
+    }
+
+    public static Workspace of(WorkspaceRequest workspaceRequest, Long artistSeq){
+        return Workspace.builder()
+                .name(workspaceRequest.getName())
+                .artist(Artist.builder()
+                        .seq(artistSeq)
+                        .build())
+                .originSinger(workspaceRequest.getOriginSinger())
+                .originTitle(workspaceRequest.getOriginTitle())
+                .state(WorkspaceState.PRIVATE)
+                .build();
     }
 
     public static Workspace fork(Workspace workspace, Long artistSeq){

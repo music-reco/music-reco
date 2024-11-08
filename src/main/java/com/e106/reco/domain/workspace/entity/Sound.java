@@ -45,7 +45,21 @@ public class Sound extends BaseTime {
     @Enumerated(EnumType.STRING)
     private SoundType type;
 
-    public void modifyPoint(ModifyPoint modifyPoint){
+    public static Sound of(String fileName, Long workspaceSeq){
+        return Sound.builder()
+                .workspace(Workspace.builder()
+                        .seq(workspaceSeq)
+                        .build())
+                .startPoint(0d)
+                .endPoint(0d)
+                .url(fileName)
+                .type(SoundType.VOCAL)
+                .build();
+    }
+
+    public void modifyPoint(ModifyPoint modifyPoint, Workspace workspace){
+        this.workspace = workspace;
+        this.type = modifyPoint.getType();
         this.startPoint = modifyPoint.getStartPoint();
         this.endPoint = modifyPoint.getEndPoint();
     }

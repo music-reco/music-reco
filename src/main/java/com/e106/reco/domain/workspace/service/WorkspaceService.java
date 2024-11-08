@@ -1,21 +1,22 @@
 package com.e106.reco.domain.workspace.service;
 
-import com.e106.reco.domain.artist.entity.Artist;
 import com.e106.reco.domain.board.repository.ArtistRepository;
 import com.e106.reco.domain.workspace.dto.SoundResponse;
+import com.e106.reco.domain.workspace.dto.TreeResponse;
 import com.e106.reco.domain.workspace.dto.WorkspaceDetailResponse;
 import com.e106.reco.domain.workspace.dto.WorkspaceRequest;
 import com.e106.reco.domain.workspace.dto.WorkspaceResponse;
 import com.e106.reco.domain.workspace.dto.midify.ModifyPoint;
 import com.e106.reco.domain.workspace.dto.midify.ModifyState;
+import com.e106.reco.domain.workspace.entity.FamilyTree;
 import com.e106.reco.domain.workspace.entity.Sound;
 import com.e106.reco.domain.workspace.entity.Workspace;
 import com.e106.reco.domain.workspace.entity.converter.WorkspaceRole;
 import com.e106.reco.domain.workspace.entity.converter.WorkspaceState;
+import com.e106.reco.domain.workspace.repository.FamilyTreeRepository;
 import com.e106.reco.domain.workspace.repository.SoundRepository;
 import com.e106.reco.domain.workspace.repository.WorkspaceRepository;
 import com.e106.reco.global.common.CommonResponse;
-import com.e106.reco.global.error.errorcode.ArtistErrorCode;
 import com.e106.reco.global.error.errorcode.WorkspaceErrorCode;
 import com.e106.reco.global.error.exception.BusinessException;
 import com.e106.reco.global.s3.S3FileService;
@@ -40,34 +41,30 @@ public class WorkspaceService {
     private final ArtistRepository artistRepository;
     private final WorkspaceRepository workspaceRepository;
     private final SoundRepository soundRepository;
+    private final FamilyTreeRepository familyTreeRepository;
     private final S3FileService s3FileService;
 
 
-    public Long create(Long artistSeq, WorkspaceRequest workspaceRequest) {
-        Artist artist = artistRepository.findById(artistSeq)
-                .orElseThrow(() -> new BusinessException(ArtistErrorCode.ARTIST_NOT_FOUND));
+    public Long create(WorkspaceRequest workspaceRequest) {
+        Long artistSeq = AuthUtil.getCustomUserDetails().getSeq();
 
-        Workspace workspace = Workspace.builder()
-                .name(workspaceRequest.getName())
-                .artist(artist)
-                .originSinger(workspaceRequest.getOriginSinger())
-                .originTitle(workspaceRequest.getOriginTitle())
-                .state(WorkspaceState.PRIVATE)
-                .build();
+        Workspace workspace = Workspace.of(workspaceRequest, artistSeq);
 
         return workspaceRepository.save(workspace).getSeq();
     }
 
-//    public Long divide(Long artistSeq, WorkspaceRequest workspaceRequest, MultipartFile sound) {
-//
-//        // 나누는 api 아마 비동기 메서드 따로 뺴야할듯.
-//
-//    }
+    public CommonResponse divide(WorkspaceRequest workspaceRequest, MultipartFile sound) {
+
+        // 나누는 api 아마 비동기 메서드 따로 뺴야할듯.
+
+        return new CommonResponse("ok");
+    }
 
     @Transactional(readOnly = true)
     public List<WorkspaceResponse> getWorkspaceList(Long artistSeq, Pageable pageable) {
 
-        // 유저 크루 검증 코드 필요함
+        if(!Objects.equals(artistSeq, AuthUtil.getCustomUserDetails().getSeq()))
+            throw new BusinessException(WorkspaceErrorCode.ROLE_NOT_MATCHED);
 
         return workspaceRepository.findByArtistSeqAndStateNot(artistSeq, WorkspaceState.INACTIVE, pageable)
                 .stream()
@@ -80,14 +77,14 @@ public class WorkspaceService {
     public WorkspaceDetailResponse getWorkspaceDetail(Long workspaceSeq) {
         Long artistSeq = AuthUtil.getCustomUserDetails().getSeq();
 
-        Workspace workspace = getWorkspace(workspaceSeq);
+        Workspace workspace = getWorkspace(workspaceSeq, artistSeq);
 
         WorkspaceRole role = getRole(workspace);
 
         if (role == WorkspaceRole.VIEWER && workspace.getState() != WorkspaceState.PUBLIC)
             throw new BusinessException(WorkspaceErrorCode.NOT_PUBLIC_WORKSPACE);
 
-        List<Sound> sounds = getSounds(workspaceSeq);
+        List<Sound> sounds = getSounds(artistSeq);
 
         return toDetailResponse(workspace, sounds, role);
 
@@ -96,7 +93,7 @@ public class WorkspaceService {
     public Long fork(Long workspaceSeq) {
         Long artistSeq = AuthUtil.getCustomUserDetails().getSeq();
 
-        Workspace originWorkspace = getWorkspace(workspaceSeq);
+        Workspace originWorkspace = getWorkspace(workspaceSeq, artistSeq);
 
         Workspace newWorkspace = Workspace.fork(originWorkspace, artistSeq);
 
@@ -106,62 +103,123 @@ public class WorkspaceService {
             Sound sound = Sound.fork(originSound, newSeq);
             soundRepository.save(sound);
         });
+        FamilyTree familyTree = FamilyTree.builder()
+                .pk(new FamilyTree.PK(workspaceSeq, newSeq))
+                .parentWorkspace(originWorkspace)
+                .childWorkspace(newWorkspace)
+                .build();
+        familyTreeRepository.save(familyTree);
 
         return newSeq;
     }
 
-//    public CommonResponse modifyThumbnail(Long workspaceSeq, MultipartFile file) {
-//        Workspace workspace = getWorkspace(workspaceSeq);
-//
-//        workspace
-//
-//        s3FileService.
-//    }
+    public CommonResponse sessionImport(Long workspaceSeq, Long soundSeq) {
+        Long artistSeq = AuthUtil.getCustomUserDetails().getSeq();
 
-    public CommonResponse modifyPoint(Long workspaceSeq, List<ModifyPoint> modifyPoints) {
-        Workspace workspace = getWorkspace(workspaceSeq);
+        Workspace workspace = getWorkspace(workspaceSeq, artistSeq);
+
+        Sound sound = soundRepository.findById(soundSeq)
+                .orElseThrow(() -> new BusinessException(WorkspaceErrorCode.SOUND_NOT_FOUND));
+
+        Sound newSound = Sound.fork(sound, workspace.getSeq());
+
+        soundRepository.save(newSound);
+
+        return new CommonResponse("ok");
+    }
+    public CommonResponse modifyPoint(Long workspaceSeq,
+                                      List<ModifyPoint> modifyPoints) {
+        Long userSeq = AuthUtil.getCustomUserDetails().getSeq();
+
+        Workspace workspace = getWorkspace(workspaceSeq, userSeq);
 
         Map<Long, Sound> sounds = getSounds(workspaceSeq).stream()
                 .collect(Collectors.toMap(Sound::getSeq, Function.identity()));
 
-//        modifyPoints.forEach(modifyPoint -> {
-//            Sound sound = sounds.getOrDefault(modifyPoint.getSoundSeq(),
-//                    Sound.builder()
-//                                    .startPoint(p)
-//                            build());
-//            sound.modifyPoint(modifyPoint);
-//        });
+        modifyPoints.forEach(modifyPoint -> {
+            Sound sound = sounds.get(modifyPoint.getSoundSeq());
+            sound.modifyPoint(modifyPoint, workspace);
+        });
+
         return new CommonResponse("ok");
     }
 
 
     public CommonResponse modifyState(Long workspaceSeq, ModifyState modifyState) {
-        Workspace workspace = getWorkspace(workspaceSeq);
+
+        Long artistSeq = AuthUtil.getCustomUserDetails().getSeq();
+
+        Workspace workspace = getWorkspace(workspaceSeq, artistSeq);
 
         workspace.modifyState(modifyState.getState());
 
         return new CommonResponse("ok");
     }
 
+    public List<TreeResponse> getTree(Long workspaceSeq) {
+        Long artistSeq = AuthUtil.getCustomUserDetails().getSeq();
+
+        Workspace workspace = getWorkspace(workspaceSeq, artistSeq);
+
+        return familyTreeRepository.findAllByPk_ChildWorkspaceSeqOrderByCreatedAt(workspace.getSeq())
+                .stream()
+                .map(this::toTreeResponse)
+                .toList();
+    }
+    public CommonResponse modifyThumbnail(Long workspaceSeq, MultipartFile file) {
+        Long artistSeq = AuthUtil.getCustomUserDetails().getSeq();
+
+        Workspace workspace = getWorkspace(workspaceSeq, artistSeq);
+
+        workspace.modifyThumbnail(s3FileService.uploadFile(file));
+
+        return new CommonResponse("ok");
+    }
 
     private WorkspaceRole getRole(Workspace workspace) {
         if (Objects.equals(workspace.getArtist().getSeq(),
                 AuthUtil.getCustomUserDetails().getSeq())) return WorkspaceRole.MASTER;
 
-        // user crew 가져와서 검증하기
-//      // List<Long> crewList
-        // return true;
-
         return WorkspaceRole.VIEWER;
     }
+    public CommonResponse sessionCreate(Long workspaceSeq, MultipartFile session) {
+        Long artistSeq = AuthUtil.getCustomUserDetails().getSeq();
 
-    private List<Sound> getSounds(Long workspaceSeq) {
-        return soundRepository.findAllByWorkspace_Seq(workspaceSeq);
+        Workspace workspace = getWorkspace(workspaceSeq, artistSeq);
+
+        String fileName = s3FileService.uploadFile(session);
+
+        Sound sound = Sound.of(fileName, workspace.getSeq());
+
+        soundRepository.save(sound);
+
+        return new CommonResponse("ok");
     }
 
-    private Workspace getWorkspace(Long workspaceSeq) {
-        return workspaceRepository.findById(workspaceSeq)
+    public CommonResponse sessionDelete(Long workspaceSeq, Long sessionSeq) {
+        Long artistSeq = AuthUtil.getCustomUserDetails().getSeq();
+
+        Workspace workspace = getWorkspace(workspaceSeq, artistSeq);
+
+        Sound sound = soundRepository.findById(sessionSeq)
+                .orElseThrow(() -> new BusinessException(WorkspaceErrorCode.SOUND_NOT_FOUND));
+
+        soundRepository.delete(sound);
+
+        return new CommonResponse("ok");
+    }
+    private List<Sound> getSounds(Long artistSeq) {
+        return soundRepository.findAllByWorkspace_Seq(artistSeq);
+    }
+
+    private Workspace getWorkspace(Long workspaceSeq, Long artistSeq) {
+        Workspace workspace = workspaceRepository.findById(workspaceSeq)
                 .orElseThrow(() -> new BusinessException(WorkspaceErrorCode.NOT_PUBLIC_WORKSPACE));
+
+        if(!Objects.equals(workspace.getArtist().getSeq(), artistSeq))
+            throw new BusinessException(WorkspaceErrorCode.ROLE_NOT_MATCHED);
+
+        return workspace;
     }
 
     private WorkspaceDetailResponse toDetailResponse(Workspace workspace, List<Sound> sounds, WorkspaceRole role) {
@@ -183,6 +241,8 @@ public class WorkspaceService {
                 .workspaceSeq(workspace.getSeq())
                 .name(workspace.getName())
                 .state(workspace.getState())
+                .originTitle(workspace.getOriginTitle())
+                .originSinger(workspace.getOriginSinger())
                 .build();
     }
 
@@ -194,5 +254,14 @@ public class WorkspaceService {
                 .type(sound.getType())
                 .build();
     }
+
+    private TreeResponse toTreeResponse(FamilyTree familyTree) {
+        return TreeResponse.builder()
+                .workspaceSeq(familyTree.getPk().getParentWorkspaceSeq())
+                .artistName(familyTree.getParentWorkspace().getArtist().getNickname())
+                .workspaceName(familyTree.getParentWorkspace().getName())
+                .build();
+    }
+
 
 }

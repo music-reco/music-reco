@@ -14,4 +14,6 @@ public class WorkspaceResponse {
     private String name;
     private String thumbnail;
     private WorkspaceState state;
+    private String originTitle;
+    private String originSinger;
 }

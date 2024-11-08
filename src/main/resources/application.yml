@@ -6,11 +6,25 @@ spring:
     include: auth
     active: prod
 
-
   servlet:
     multipart:
       enabled: true
       max-file-size: 100MB
+      max-request-size: 100MB
+      resolve-lazily: false
+
+#  mvc:
+#    contentnegotiation:
+#      favor-parameter: true
+#      media-types:
+#        mp4: video/mp4
+#        mp3: audio/mpeg
+#        wav: audio/wav
+#        m4a: audio/mp4
+#        aac: audio/aac
+#        ogg: audio/ogg
+#        flac: audio/flac
+
 
 logging:
   level:
@@ -19,3 +33,10 @@ logging:
         type:
           descriptor:
             sql: trace
+      springframework:
+        web:
+          multipart: DEBUG
+#server:
+#  tomcat:
+#    max-http-form-post-size: 100MB
+#    max-swallow-size: 100MB
