@@ -9,6 +9,7 @@ import com.e106.reco.domain.artist.entity.Position;
 import com.e106.reco.domain.artist.user.dto.CustomUserDetails;
 import com.e106.reco.domain.board.dto.BoardRequestDto;
 import com.e106.reco.domain.board.dto.BoardResponseDto;
+import com.e106.reco.domain.board.dto.BoardsResponseDto;
 import com.e106.reco.domain.board.dto.CommentRequestDto;
 import com.e106.reco.domain.board.dto.CommentResponseDto;
 import com.e106.reco.domain.board.entity.Board;
@@ -53,17 +54,39 @@ public class BoardService {
     private final S3FileService s3FileService;
     private final int FILE_SIZE = 15;
 
+    public List<BoardsResponseDto> getBoards(Long artistSeq) {
+        CustomUserDetails user = AuthUtil.getCustomUserDetails();
+
+        Artist artist = artistRepository.findBySeq(artistSeq)
+                .orElseThrow(()-> new BusinessException(ARTIST_NOT_FOUND));
+
+        List<Board> boards;
+        if(artist.getPosition() == Position.CREW && user.getCrews().contains(artistSeq) ||
+                artist.getPosition() != Position.CREW && user.getSeq().equals(artistSeq))
+            boards = boardRepository.findByArtist_seq(artistSeq);
+        else
+            boards = boardRepository.findByArtist_seqAndState(artistSeq, BoardState.PUBLIC);
+
+        return boards.stream().map(board -> BoardsResponseDto.of(board, getComment(board.getSeq()).size())).toList();
+    }
+
     public BoardResponseDto getBoard(Long boardSeq){
         CustomUserDetails user = AuthUtil.getCustomUserDetails();
 
         Board board = boardRepository.findBySeq(boardSeq)
                 .orElseThrow(()->new BusinessException(BOARD_NOT_FOUND));
+        Artist artist = board.getArtist();
+
+        if(board.getState() == BoardState.PRIVATE){
+
+            if(artist.getPosition() == Position.CREW && !user.getCrews().contains(artist.getSeq()))
+                return null;
+            else if(artist.getPosition() != Position.CREW && !user.getSeq().equals(artist.getSeq()))
+                return null;
+        }
 
         List<Source> sources = sourceRepository.findByBoard_seq(boardSeq);
         List<CommentResponseDto> comments = getComment(boardSeq);
-
-        //TODO : follow 관계 만들어진 후 권한 검증 추가
-        //if(board.getState()== BoardState.PRIVATE)
 
         return BoardResponseDto.of(board, sources, comments);
     }
