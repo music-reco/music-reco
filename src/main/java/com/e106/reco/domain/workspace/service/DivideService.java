@@ -10,6 +10,7 @@ import com.e106.reco.domain.workspace.entity.converter.StemType;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,7 +19,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -38,7 +41,8 @@ public class DivideService {
         }
     }
 
-    public AudioDivideResponse divideAudioFile(MultipartFile file, String stemValue, String splitterValue) {
+    @Async(value = "asyncExecutor1")
+    public CompletableFuture<AudioDivideResponse> divideAudioFile(MultipartFile file, String stemValue, String splitterValue) {
         validateAudioFile(file);
         validateStemAndSplitter(stemValue, splitterValue);
 
@@ -59,7 +63,7 @@ public class DivideService {
                     Duration.ofMinutes(5)
             );
 
-            return convertToResponse(result);
+            return CompletableFuture.completedFuture(convertToResponse(result));
 
         } catch (IOException e) {
             throw new RuntimeException("Failed to process audio file: " + e.getMessage());
