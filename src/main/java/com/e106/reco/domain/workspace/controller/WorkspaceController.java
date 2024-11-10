@@ -39,15 +39,23 @@ public class WorkspaceController {
     }
 
 
-    @PostMapping("/workspaces/divide")
-    public ResponseEntity<CommonResponse> divide(@RequestBody WorkspaceRequest workspaceRequest,
-                                                 @RequestParam(name = "sound") MultipartFile sound) {
-        return ResponseEntity.ok(workspaceService.divide(workspaceRequest, sound));
+    @PostMapping("/workspace/divide")
+    public ResponseEntity<CommonResponse> divideAudio(
+            @RequestBody @Valid WorkspaceRequest workspaceRequest,
+            @RequestPart(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "stemList") List<String> stemList,
+            @RequestParam(value = "splitter", defaultValue = "phoenix") String splitter){
+        workspaceService.divide(workspaceRequest, file, stemList, splitter)
+                .thenAccept(results -> {
+                    // FCM 알림 전송 등 모든 작업이 완료된 후의 처리
+                });
+
+        return ResponseEntity.ok(new CommonResponse("Processing started"));
     }
 
-    @PostMapping("/workspaces/{workspaceSeq}/session")
+    @PostMapping(value = "/workspaces/{workspaceSeq}/session", consumes = "multipart/form-data")
     public ResponseEntity<CommonResponse> sessionCreate(@PathVariable Long workspaceSeq,
-                                                        @RequestParam MultipartFile session){
+                                                        @RequestPart(value = "session") MultipartFile session){
         return ResponseEntity.ok(workspaceService.sessionCreate(workspaceSeq, session));
     }
 
@@ -87,7 +95,7 @@ public class WorkspaceController {
 
     @PostMapping("/workspaces/{workspaceSeq}/thumbnail")
     public ResponseEntity<CommonResponse> modifyThumbnail(@PathVariable Long workspaceSeq,
-                                                          @RequestParam(value = "file") MultipartFile file) {
+                                                          @RequestPart(value = "file") MultipartFile file) {
         return ResponseEntity.ok(workspaceService.modifyThumbnail(workspaceSeq, file));
     }
 
