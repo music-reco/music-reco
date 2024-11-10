@@ -39,19 +39,19 @@ public class WorkspaceController {
     }
 
 
-    @PostMapping("/workspace/divide")
-    public ResponseEntity<CommonResponse> divideAudio(
-            @RequestBody @Valid WorkspaceRequest workspaceRequest,
-            @RequestPart(value = "file", required = false) MultipartFile file,
-            @RequestParam(value = "stemList") List<String> stemList,
-            @RequestParam(value = "splitter", defaultValue = "phoenix") String splitter){
-        workspaceService.divide(workspaceRequest, file, stemList, splitter)
-                .thenAccept(results -> {
-                    // FCM 알림 전송 등 모든 작업이 완료된 후의 처리
-                });
+    // @PostMapping("/workspace/divide")
+    // public ResponseEntity<CommonResponse> divideAudio(
+    //         @RequestBody @Valid WorkspaceRequest workspaceRequest,
+    //         @RequestPart(value = "file", required = false) MultipartFile file,
+    //         @RequestParam(value = "stemList") List<String> stemList,
+    //         @RequestParam(value = "splitter", defaultValue = "phoenix") String splitter){
+    //     workspaceService.divide(workspaceRequest, file, stemList, splitter)
+    //             .thenAccept(results -> {
+    //                 // FCM 알림 전송 등 모든 작업이 완료된 후의 처리
+    //             });
 
-        return ResponseEntity.ok(new CommonResponse("Processing started"));
-    }
+    //     return ResponseEntity.ok(new CommonResponse("Processing started"));
+    // }
 
     @PostMapping(value = "/workspaces/{workspaceSeq}/session", consumes = "multipart/form-data")
     public ResponseEntity<CommonResponse> sessionCreate(@PathVariable Long workspaceSeq,
