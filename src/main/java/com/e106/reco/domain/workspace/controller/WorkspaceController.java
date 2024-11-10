@@ -53,7 +53,7 @@ public class WorkspaceController {
     //     return ResponseEntity.ok(new CommonResponse("Processing started"));
     // }
 
-    @PostMapping(value = "/workspaces/{workspaceSeq}/session", consumes = "multipart/form-data")
+    @PostMapping(value = "/workspaces/{workspaceSeq}/session")
     public ResponseEntity<CommonResponse> sessionCreate(@PathVariable Long workspaceSeq,
                                                         @RequestPart(value = "session") MultipartFile session){
         return ResponseEntity.ok(workspaceService.sessionCreate(workspaceSeq, session));
