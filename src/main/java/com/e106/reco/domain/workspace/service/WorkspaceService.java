@@ -1,16 +1,18 @@
 package com.e106.reco.domain.workspace.service;
 
-import com.e106.reco.domain.board.repository.ArtistRepository;
 import com.e106.reco.domain.workspace.dto.SoundResponse;
 import com.e106.reco.domain.workspace.dto.TreeResponse;
 import com.e106.reco.domain.workspace.dto.WorkspaceDetailResponse;
 import com.e106.reco.domain.workspace.dto.WorkspaceRequest;
 import com.e106.reco.domain.workspace.dto.WorkspaceResponse;
+import com.e106.reco.domain.workspace.dto.divide.AudioDivideResponse;
 import com.e106.reco.domain.workspace.dto.midify.ModifyPoint;
 import com.e106.reco.domain.workspace.dto.midify.ModifyState;
 import com.e106.reco.domain.workspace.entity.FamilyTree;
 import com.e106.reco.domain.workspace.entity.Sound;
 import com.e106.reco.domain.workspace.entity.Workspace;
+import com.e106.reco.domain.workspace.entity.converter.SoundType;
+import com.e106.reco.domain.workspace.entity.converter.StemType;
 import com.e106.reco.domain.workspace.entity.converter.WorkspaceRole;
 import com.e106.reco.domain.workspace.entity.converter.WorkspaceState;
 import com.e106.reco.domain.workspace.repository.FamilyTreeRepository;
@@ -22,7 +24,9 @@ import com.e106.reco.global.error.exception.BusinessException;
 import com.e106.reco.global.s3.S3FileService;
 import com.e106.reco.global.util.AuthUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,20 +34,22 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class WorkspaceService {
-
-    private final ArtistRepository artistRepository;
     private final WorkspaceRepository workspaceRepository;
     private final SoundRepository soundRepository;
     private final FamilyTreeRepository familyTreeRepository;
     private final S3FileService s3FileService;
-
+    private final DivideService divideService;
 
     public Long create(WorkspaceRequest workspaceRequest) {
         Long artistSeq = AuthUtil.getCustomUserDetails().getSeq();
@@ -53,13 +59,30 @@ public class WorkspaceService {
         return workspaceRepository.save(workspace).getSeq();
     }
 
-    public CommonResponse divide(WorkspaceRequest workspaceRequest, MultipartFile sound) {
+    @Async
+    public CompletableFuture<List<AudioDivideResponse>> divide(WorkspaceRequest workspaceRequest,
+                                                               MultipartFile file, List<String> stemList, String splitter) {
+        Long artistSeq = AuthUtil.getCustomUserDetails().getSeq();
 
-        // 나누는 api 아마 비동기 메서드 따로 뺴야할듯.
+        Workspace workspace = Workspace.of(workspaceRequest, artistSeq);
 
-        return new CommonResponse("ok");
+        List<CompletableFuture<AudioDivideResponse>> futures = stemList.stream()
+                .map(stem -> divideService.divideAudioFile(file, stem, splitter)
+                        .thenApply(response -> {
+                            saveSound(response, workspace, stem);
+                            return response;
+                        })
+                        .exceptionally(ex -> {
+                            log.error("Error processing stem: {}", stem, ex);
+                            return null;
+                        }))
+                .toList();
+
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                .thenApply(v -> futures.stream()
+                        .map(CompletableFuture::join)
+                        .collect(Collectors.toList()));
     }
-
     @Transactional(readOnly = true)
     public List<WorkspaceResponse> getWorkspaceList(Long artistSeq, Pageable pageable) {
 
@@ -266,5 +289,17 @@ public class WorkspaceService {
                 .build();
     }
 
-
+    private void saveSound(AudioDivideResponse response, Workspace workspace, String stemType) {
+        // stemTrack 저장
+        if (response.getStemTrackUrl() != null) {
+            Sound stemTrack = Sound.builder()
+                    .url(response.getStemTrackUrl())
+                    .type(SoundType.valueOf(stemType))  // enum으로 변환
+                    .workspace(workspace)
+                    .startPoint(0d)
+                    .endPoint(response.getDuration())
+                    .build();
+            soundRepository.save(stemTrack);
+        }
+    }
 }
