@@ -12,7 +12,6 @@ import com.e106.reco.domain.workspace.entity.FamilyTree;
 import com.e106.reco.domain.workspace.entity.Sound;
 import com.e106.reco.domain.workspace.entity.Workspace;
 import com.e106.reco.domain.workspace.entity.converter.SoundType;
-import com.e106.reco.domain.workspace.entity.converter.StemType;
 import com.e106.reco.domain.workspace.entity.converter.WorkspaceRole;
 import com.e106.reco.domain.workspace.entity.converter.WorkspaceState;
 import com.e106.reco.domain.workspace.repository.FamilyTreeRepository;
@@ -31,12 +30,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -63,25 +61,56 @@ public class WorkspaceService {
     public CompletableFuture<List<AudioDivideResponse>> divide(WorkspaceRequest workspaceRequest,
                                                                MultipartFile file, List<String> stemList, String splitter) {
         Long artistSeq = AuthUtil.getCustomUserDetails().getSeq();
-
         Workspace workspace = Workspace.of(workspaceRequest, artistSeq);
 
-        List<CompletableFuture<AudioDivideResponse>> futures = stemList.stream()
-                .map(stem -> divideService.divideAudioFile(file, stem, splitter)
-                        .thenApply(response -> {
-                            saveSound(response, workspace, stem);
-                            return response;
-                        })
-                        .exceptionally(ex -> {
-                            log.error("Error processing stem: {}", stem, ex);
-                            return null;
-                        }))
-                .toList();
+        String contentType = file.getContentType();
+        log.info("Original ContentType: {}", contentType);
 
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-                .thenApply(v -> futures.stream()
-                        .map(CompletableFuture::join)
-                        .collect(Collectors.toList()));
+        return processAudioFile(file, contentType, stemList, splitter, workspace);
+    }
+
+    private CompletableFuture<List<AudioDivideResponse>> processAudioFile(
+            MultipartFile file, String contentType, List<String> stemList, String splitter, Workspace workspace) {
+        File tempFile = null;
+        try {
+            String originalFilename = file.getOriginalFilename();
+            String extension = originalFilename != null ?
+                    originalFilename.substring(originalFilename.lastIndexOf(".")) : ".tmp";
+
+            tempFile = File.createTempFile("audio_", extension);
+            file.transferTo(tempFile);
+            workspaceRepository.save(workspace);
+            FileInfo fileInfo = new FileInfo(tempFile, contentType);
+
+            List<CompletableFuture<AudioDivideResponse>> futures = stemList.stream()
+                    .map(stem -> divideService.divideAudioFile(fileInfo.file, fileInfo.contentType, stem, splitter)
+                            .thenApply(response -> {
+                                saveSound(response, workspace, stem);
+                                return response;
+                            })
+                            .exceptionally(ex -> {
+                                log.error("Error processing stem: {}", stem, ex);
+                                return null;
+                            }))
+                    .toList();
+
+            File finalTempFile = tempFile;
+            return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                    .thenApply(v -> futures.stream()
+                            .map(CompletableFuture::join)
+                            .collect(Collectors.toList()))
+                    .whenComplete((result, throwable) -> {
+                        if (finalTempFile.exists()) {
+                            finalTempFile.delete();
+                        }
+                    });
+        } catch (Exception e) {
+            log.error("Error in divide process", e);
+            if (tempFile != null && tempFile.exists()) {
+                tempFile.delete();
+            }
+            throw new RuntimeException("Failed to process audio file", e);
+        }
     }
     @Transactional(readOnly = true)
     public List<WorkspaceResponse> getWorkspaceList(Long artistSeq, Pageable pageable) {
@@ -294,12 +323,22 @@ public class WorkspaceService {
         if (response.getStemTrackUrl() != null) {
             Sound stemTrack = Sound.builder()
                     .url(response.getStemTrackUrl())
-                    .type(SoundType.valueOf(stemType))  // enum으로 변환
+                    .type(SoundType.fromString(stemType))  // enum으로 변환
                     .workspace(workspace)
                     .startPoint(0d)
                     .endPoint(response.getDuration())
                     .build();
             soundRepository.save(stemTrack);
+        }
+    }
+
+    private static class FileInfo {
+        final File file;
+        final String contentType;
+
+        FileInfo(File file, String contentType) {
+            this.file = file;
+            this.contentType = contentType;
         }
     }
 }

@@ -44,23 +44,25 @@ public class WorkspaceController {
     }
 
 
-     @PostMapping("/workspaces/divide")
-     public ResponseEntity<CommonResponse> divideAudio(
-             @RequestPart(value = "workspaceRequest") @Valid WorkspaceRequest workspaceRequest,
-             @RequestPart(value = "file") MultipartFile file,
-             @RequestPart(value = "stemList") List<String> stemList,
-             @RequestParam(value = "splitter", defaultValue = "phoenix") String splitter,
-             @RequestParam(value = "fcmToken", required = false) String fcmToken){
-         log.info("변환시작합니다.");
-         workspaceService.divide(workspaceRequest, file, stemList, splitter)
-                 .thenAccept(results -> {
-                     // FCM 알림 전송 등 모든 작업이 완료된 후의 처리
-                     log.info("변환이 끝났습니다.");
-                     fcmService.sendMessageTo(new FcmSendDto(fcmToken, "변환이 끝났어요.","워크 스페이스에서 확인하세요."));
-                 });
+    @PostMapping("/workspace/divide")
+    public ResponseEntity<CommonResponse> divideAudio(
+            @RequestPart(value = "workspaceRequest") @Valid WorkspaceRequest workspaceRequest,
+            @RequestPart(value = "file") MultipartFile file,
+            @RequestPart(value = "stemList") List<String> stemList,
+            @RequestParam(value = "splitter", defaultValue = "phoenix") String splitter,
+            @RequestParam(value = "fcmToken", required = false) String fcmToken){
+        log.info("변환시작합니다.");
+        log.info("file = {}", file.getOriginalFilename());
+        log.info("file = {}", file.getContentType());
+        workspaceService.divide(workspaceRequest, file, stemList, splitter)
+                .thenAccept(results -> {
+                    // FCM 알림 전송 등 모든 작업이 완료된 후의 처리
+                    log.info("변환이 끝났습니다.");
+                    fcmService.sendMessageTo(new FcmSendDto(fcmToken, "변환이 끝났어요.","워크 스페이스에서 확인하세요."));
+                });
 
-         return ResponseEntity.ok(new CommonResponse("Processing started"));
-     }
+        return ResponseEntity.ok(new CommonResponse("Processing started"));
+    }
 
     @PostMapping(value = "/workspaces/{workspaceSeq}/session")
     public ResponseEntity<CommonResponse> sessionCreate(@PathVariable Long workspaceSeq,
@@ -113,7 +115,7 @@ public class WorkspaceController {
                                                       @RequestPart(value = "sessions") List<ModifyPoint> modifyPoints) {
         return ResponseEntity.ok(workspaceService.modifyPoint(workspaceSeq, modifyPoints));
     }
-
+    
     @PostMapping("/workspaces/{workspaceSeq}/state")
     public ResponseEntity<CommonResponse> modifyState(@PathVariable Long workspaceSeq,
                                                       @RequestBody ModifyState modifyState) {
