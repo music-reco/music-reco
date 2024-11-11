@@ -24,13 +24,17 @@ import com.e106.reco.global.s3.S3FileService;
 import com.e106.reco.global.util.AuthUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -48,6 +52,9 @@ public class WorkspaceService {
     private final FamilyTreeRepository familyTreeRepository;
     private final S3FileService s3FileService;
     private final DivideService divideService;
+
+    @Value("${spring.servlet.multipart.location}")
+    private String tempPath;
 
     public Long create(WorkspaceRequest workspaceRequest) {
         Long artistSeq = AuthUtil.getCustomUserDetails().getSeq();
@@ -71,19 +78,34 @@ public class WorkspaceService {
 
     private CompletableFuture<List<AudioDivideResponse>> processAudioFile(
             MultipartFile file, String contentType, List<String> stemList, String splitter, Workspace workspace) {
+        File tempDir = new File(tempPath);
+        if (!tempDir.exists()) {
+            tempDir.mkdirs();
+        }
         File tempFile = null;
         try {
             String originalFilename = file.getOriginalFilename();
             String extension = originalFilename != null ?
                     originalFilename.substring(originalFilename.lastIndexOf(".")) : ".tmp";
 
-            tempFile = File.createTempFile("audio_", extension);
-            file.transferTo(tempFile);
-            workspaceRepository.save(workspace);
-            FileInfo fileInfo = new FileInfo(tempFile, contentType);
+            tempFile = File.createTempFile("audio_", extension, tempDir);
 
+            try (InputStream in = file.getInputStream();
+                 FileOutputStream out = new FileOutputStream(tempFile)) {
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, bytesRead);
+                }
+                out.flush();
+            }
+
+            log.info("Temporary file created at: {}", tempFile.getAbsolutePath());
+
+            final File audioFile = tempFile;
+            workspaceRepository.save(workspace);
             List<CompletableFuture<AudioDivideResponse>> futures = stemList.stream()
-                    .map(stem -> divideService.divideAudioFile(fileInfo.file, fileInfo.contentType, stem, splitter)
+                    .map(stem -> divideService.divideAudioFile(audioFile, contentType, stem, splitter)
                             .thenApply(response -> {
                                 saveSound(response, workspace, stem);
                                 return response;
@@ -332,13 +354,21 @@ public class WorkspaceService {
         }
     }
 
-    private static class FileInfo {
-        final File file;
-        final String contentType;
-
-        FileInfo(File file, String contentType) {
-            this.file = file;
-            this.contentType = contentType;
+    // 주기적으로 임시 파일 정리
+    @Scheduled(fixedRate = 3600000) // 1시간마다
+    public void cleanupTempFiles() {
+        File tempDir = new File(tempPath);
+        if (tempDir.exists() && tempDir.isDirectory()) {
+            File[] files = tempDir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (System.currentTimeMillis() - file.lastModified() > 3600000) { // 1시간 이상 된 파일
+                        if (!file.delete()) {
+                            log.warn("Failed to delete old temporary file: {}", file.getAbsolutePath());
+                        }
+                    }
+                }
+            }
         }
     }
 }
