@@ -10,8 +10,6 @@ services:
       dockerfile: Dockerfile
     volumes:
       - temp_volume:/app/temp
-    environment:
-      - TEMP_DIR=/app/temp
     ports:
       - 8080:8080
     networks:
@@ -23,5 +21,6 @@ services:
       - SPRING_REDIS_HOST=${REDIS_HOST}
       - SPRING_REDIS_PORT=${REDIS_PORT}
       - SPRING_REDIS_PASSWORD=${REDIS_PASSWORD}
+      - TEMP_DIR=/app/temp
 volumes:
   temp_volume:
