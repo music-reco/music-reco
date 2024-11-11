@@ -73,6 +73,8 @@ dependencies {
     implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-aws', version: '2.2.6.RELEASE'
     // thumbnailator
     implementation group: 'net.coobird', name: 'thumbnailator', version: '0.4.20'
+    // firebase
+    implementation 'com.google.firebase:firebase-admin:9.2.0'
 
 }
 
