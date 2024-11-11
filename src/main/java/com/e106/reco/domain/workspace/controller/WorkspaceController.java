@@ -7,9 +7,12 @@ import com.e106.reco.domain.workspace.dto.WorkspaceResponse;
 import com.e106.reco.domain.workspace.dto.midify.ModifyPoint;
 import com.e106.reco.domain.workspace.dto.midify.ModifyState;
 import com.e106.reco.domain.workspace.service.WorkspaceService;
+import com.e106.reco.global.alarm.dto.FcmSendDto;
+import com.e106.reco.global.alarm.service.FcmService;
 import com.e106.reco.global.common.CommonResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -30,8 +33,10 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
+@Slf4j
 public class WorkspaceController {
     private final WorkspaceService workspaceService;
+    private final FcmService fcmService;
 
     @PostMapping("/workspaces")
     public ResponseEntity<Long> createWorkspace(@RequestBody @Valid WorkspaceRequest workspaceRequest) {
@@ -44,10 +49,14 @@ public class WorkspaceController {
              @RequestBody @Valid WorkspaceRequest workspaceRequest,
              @RequestPart(value = "file") MultipartFile file,
              @RequestParam(value = "stemList") List<String> stemList,
-             @RequestParam(value = "splitter", defaultValue = "phoenix") String splitter){
+             @RequestParam(value = "splitter", defaultValue = "phoenix") String splitter,
+             @RequestParam(value = "fcmToken", required = false) String fcmToken){
+         log.info("변환시작합니다.");
          workspaceService.divide(workspaceRequest, file, stemList, splitter)
                  .thenAccept(results -> {
                      // FCM 알림 전송 등 모든 작업이 완료된 후의 처리
+                     log.info("변환이 끝났습니다.");
+                     fcmService.sendMessageTo(new FcmSendDto(fcmToken, "변환이 끝났어요.","워크 스페이스에서 확인하세요."));
                  });
 
          return ResponseEntity.ok(new CommonResponse("Processing started"));
