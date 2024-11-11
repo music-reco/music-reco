@@ -44,11 +44,11 @@ public class WorkspaceController {
     }
 
 
-     @PostMapping("/workspace/divide")
+     @PostMapping("/workspaces/divide")
      public ResponseEntity<CommonResponse> divideAudio(
-             @RequestBody @Valid WorkspaceRequest workspaceRequest,
+             @RequestPart(value = "workspaceRequest") @Valid WorkspaceRequest workspaceRequest,
              @RequestPart(value = "file") MultipartFile file,
-             @RequestParam(value = "stemList") List<String> stemList,
+             @RequestPart(value = "stemList") List<String> stemList,
              @RequestParam(value = "splitter", defaultValue = "phoenix") String splitter,
              @RequestParam(value = "fcmToken", required = false) String fcmToken){
          log.info("변환시작합니다.");
