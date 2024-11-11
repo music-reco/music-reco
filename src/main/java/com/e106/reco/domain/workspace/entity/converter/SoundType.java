@@ -26,6 +26,6 @@ public enum SoundType {
                 return soundType;
             }
         }
-        throw new IllegalArgumentException(source);
+        return ETC;
     }
 }
