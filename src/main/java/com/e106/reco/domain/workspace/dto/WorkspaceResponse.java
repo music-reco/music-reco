@@ -10,11 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class WorkspaceResponse {
-    private Long workspaceSeq;
-    private String name;
-    private String thumbnail;
-    private WorkspaceState state;
-    private String originTitle;
-    private String originSinger;
-    private Integer totalPage;
+    private int totalPage;
+    private WorkspaceDto workspaceDto;
 }

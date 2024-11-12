@@ -3,6 +3,7 @@ package com.e106.reco.domain.workspace.service;
 import com.e106.reco.domain.workspace.dto.SoundResponse;
 import com.e106.reco.domain.workspace.dto.TreeResponse;
 import com.e106.reco.domain.workspace.dto.WorkspaceDetailResponse;
+import com.e106.reco.domain.workspace.dto.WorkspaceDto;
 import com.e106.reco.domain.workspace.dto.WorkspaceRequest;
 import com.e106.reco.domain.workspace.dto.WorkspaceResponse;
 import com.e106.reco.domain.workspace.dto.divide.AudioDivideResponse;
@@ -312,12 +313,14 @@ public class WorkspaceService {
 
     private WorkspaceResponse toResponse(Workspace workspace, Integer totalPages) {
         return WorkspaceResponse.builder()
-                .workspaceSeq(workspace.getSeq())
-                .name(workspace.getName())
-                .state(workspace.getState())
-                .thumbnail(s3FileService.getFile(workspace.getThumbnail()))
-                .originTitle(workspace.getOriginTitle())
-                .originSinger(workspace.getOriginSinger())
+                .workspaceDto(WorkspaceDto.builder()
+                        .workspaceSeq(workspace.getSeq())
+                        .name(workspace.getName())
+                        .state(workspace.getState())
+                        .thumbnail(s3FileService.getFile(workspace.getThumbnail()))
+                        .originTitle(workspace.getOriginTitle())
+                        .originSinger(workspace.getOriginSinger())
+                        .build())
                 .totalPage(totalPages)
                 .build();
     }
