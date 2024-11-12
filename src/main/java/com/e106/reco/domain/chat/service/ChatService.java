@@ -9,9 +9,11 @@ import com.e106.reco.domain.artist.user.dto.CustomUserDetails;
 import com.e106.reco.domain.board.repository.ArtistRepository;
 import com.e106.reco.domain.chat.dto.RoomRequest;
 import com.e106.reco.domain.chat.entity.Chat;
+import com.e106.reco.domain.chat.entity.ChatArtist;
 import com.e106.reco.domain.chat.entity.ChatRoom;
 import com.e106.reco.domain.chat.entity.Room;
 import com.e106.reco.domain.chat.entity.RoomState;
+import com.e106.reco.domain.chat.repository.ChatArtistRepository;
 import com.e106.reco.domain.chat.repository.ChatRepository;
 import com.e106.reco.domain.chat.repository.ChatRoomRepository;
 import com.e106.reco.domain.chat.repository.RoomRepository;
@@ -22,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -47,12 +50,23 @@ public class ChatService {
     private final ChatRepository chatRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final CrewUserRepository crewUserRepository;
+    private final ChatArtistRepository chatArtistRepository;
 
 //    public Flux<Chat> getMsg(Long artistSeq, String roomSeq){
 //        chatArtistRepository.c
 //        return chatRepository.mFindByGroupSeqAfterJoin(roomSeq, )
 //            .subscribeOn(Schedulers.boundedElastic());
 //    }
+    public void leave(Long roomSeq, Long artistSeq) {
+        CustomUserDetails customUserDetails = AuthUtil.getCustomUserDetails();
+
+    public Flux<ChatArtist> getArtistInfo(String roomSeq) {
+//        List<Long> artists = chatRoomRepository.artistSeqFindByRoomSeq(Long.parseLong(roomSeq));
+
+        return Flux.empty();
+    }
+
+
     public void leave(Long roomSeq, Long artistSeq) {
         CustomUserDetails customUserDetails = AuthUtil.getCustomUserDetails();
 
@@ -75,7 +89,7 @@ public class ChatService {
         if(artist.getPosition().equals(Position.CREW)) throw new BusinessException(CHAT_NOT_ALLOW_GROUP_CHAT);
 
         if(chatRoomRepository.countByRoom(room)==2) {
-            List<Long> receivers = chatRoomRepository.artistSeqFindByRoom(room);
+            List<Long> receivers = chatRoomRepository.artistSeqFindByRoomSeq(roomSeq);
             Long newRoomSeq = createGroupChatRoom(RoomRequest.builder()
                     .senderSeq(customUserDetails.getSeq())
                     .receiversSeq(receivers)

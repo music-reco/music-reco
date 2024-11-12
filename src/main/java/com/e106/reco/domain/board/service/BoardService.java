@@ -7,6 +7,7 @@ import com.e106.reco.domain.artist.crew.repository.CrewUserRepository;
 import com.e106.reco.domain.artist.entity.Artist;
 import com.e106.reco.domain.artist.entity.Position;
 import com.e106.reco.domain.artist.user.dto.CustomUserDetails;
+import com.e106.reco.domain.board.dto.ArtistSummaryDto;
 import com.e106.reco.domain.board.dto.BoardRequestDto;
 import com.e106.reco.domain.board.dto.BoardResponseDto;
 import com.e106.reco.domain.board.dto.BoardsResponseDto;
@@ -55,7 +56,7 @@ public class BoardService {
     private final S3FileService s3FileService;
     private final int FILE_SIZE = 15;
 
-    public List<BoardsResponseDto> getBoards(Long artistSeq, Pageable pageable) {
+    public BoardsResponseDto getBoards(Long artistSeq, Pageable pageable) {
         CustomUserDetails user = AuthUtil.getCustomUserDetails();
 
         Artist artist = artistRepository.findBySeq(artistSeq)
@@ -68,7 +69,10 @@ public class BoardService {
         else
             boards = boardRepository.findByArtist_seqAndState(artistSeq, BoardState.PUBLIC, pageable);
 
-        return boards.stream().map(board -> BoardsResponseDto.of(board, commentRepository.countByBoard_Seq(board.getSeq()))).toList();
+        return BoardsResponseDto.of(
+                boards.stream().map(board -> BoardsResponseDto.of(board, commentRepository.countByBoard_Seq(board.getSeq()))).toList(),
+                ArtistSummaryDto.of(artist)
+        );
     }
 
     public BoardResponseDto getBoard(Long boardSeq, Pageable pageable){

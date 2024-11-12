@@ -21,7 +21,7 @@ public class BoardsResponseDto {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    private static class BoardResponseDto {
+    public static class BoardResponseDto {
 
         private Long seq;
         private String title;
@@ -36,6 +36,7 @@ public class BoardsResponseDto {
                 .seq(board.getSeq())
                 .state(board.getState().name())
                 .title(board.getTitle())
+                .createTime(board.getCreatedAt())
                 .comments(comments)
                 .build();
     }
