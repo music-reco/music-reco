@@ -16,4 +16,5 @@ public class WorkspaceResponse {
     private WorkspaceState state;
     private String originTitle;
     private String originSinger;
+    private Integer totalPage;
 }

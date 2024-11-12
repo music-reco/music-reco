@@ -25,6 +25,7 @@ import com.e106.reco.global.util.AuthUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -139,13 +140,11 @@ public class WorkspaceService {
 
         if(!Objects.equals(artistSeq, AuthUtil.getCustomUserDetails().getSeq()))
             throw new BusinessException(WorkspaceErrorCode.ROLE_NOT_MATCHED);
-
-        return workspaceRepository.findByArtistSeqAndStateNot(artistSeq, WorkspaceState.INACTIVE, pageable)
-                .stream()
-                .map(this::toResponse)
+        Page<Workspace> byArtistSeqAndStateNot = workspaceRepository.findByArtistSeqAndStateNot(artistSeq, WorkspaceState.INACTIVE, pageable);
+        return byArtistSeqAndStateNot.stream()
+                .map(workspace -> toResponse(workspace, byArtistSeqAndStateNot.getTotalPages()))
                 .toList();
     }
-
 
     @Transactional(readOnly = true)
     public WorkspaceDetailResponse getWorkspaceDetail(Long workspaceSeq) {
@@ -311,7 +310,7 @@ public class WorkspaceService {
                 .build();
     }
 
-    private WorkspaceResponse toResponse(Workspace workspace) {
+    private WorkspaceResponse toResponse(Workspace workspace, Integer totalPages) {
         return WorkspaceResponse.builder()
                 .workspaceSeq(workspace.getSeq())
                 .name(workspace.getName())
@@ -319,6 +318,7 @@ public class WorkspaceService {
                 .thumbnail(s3FileService.getFile(workspace.getThumbnail()))
                 .originTitle(workspace.getOriginTitle())
                 .originSinger(workspace.getOriginSinger())
+                .totalPage(totalPages)
                 .build();
     }
 
