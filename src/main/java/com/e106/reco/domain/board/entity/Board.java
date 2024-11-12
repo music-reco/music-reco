@@ -62,6 +62,9 @@ public class Board {
     public void changeThumbnail(String thumbnail) {
         this.thumbnail = thumbnail;
     }
-
+    public void changeState(BoardState state) {this.state = state;}
+    public void changeContent(String content) {this.content = content;}
+    public void changeUpdatedAt() {this.updatedAt = LocalDateTime.now();}
+    public void changeTitle(String title) {this.title = title;}
 
 }

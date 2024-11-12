@@ -1,6 +1,7 @@
 package com.e106.reco.domain.board.repository;
 
 import com.e106.reco.domain.board.entity.Comment;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -13,6 +14,9 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     Optional<Comment> findBySeq(Long seq);
 
     @Query("select c from Comment c where c.board.seq = :boardSeq")
-    List<Comment> findByBoard_Seq(Long boardSeq);
+    List<Comment> findByBoard_Seq(Long boardSeq, Pageable pageable);
+
     List<Comment> findByParent_seq(Long parentSeq);
+
+    int countByBoard_Seq(Long boardSeq);
 }

@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface SourceRepository extends JpaRepository<Source, Long> {
     List<Source> findByBoard_seq(Long boardSeq);
+    void deleteByBoard_seq(Long boardSeq);
 }

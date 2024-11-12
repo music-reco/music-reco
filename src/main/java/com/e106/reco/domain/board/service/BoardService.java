@@ -29,6 +29,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -54,7 +55,7 @@ public class BoardService {
     private final S3FileService s3FileService;
     private final int FILE_SIZE = 15;
 
-    public List<BoardsResponseDto> getBoards(Long artistSeq) {
+    public List<BoardsResponseDto> getBoards(Long artistSeq, Pageable pageable) {
         CustomUserDetails user = AuthUtil.getCustomUserDetails();
 
         Artist artist = artistRepository.findBySeq(artistSeq)
@@ -63,14 +64,14 @@ public class BoardService {
         List<Board> boards;
         if(artist.getPosition() == Position.CREW && user.getCrews().contains(artistSeq) ||
                 artist.getPosition() != Position.CREW && user.getSeq().equals(artistSeq))
-            boards = boardRepository.findByArtist_seq(artistSeq);
+            boards = boardRepository.findByArtist_seq(artistSeq, pageable);
         else
-            boards = boardRepository.findByArtist_seqAndState(artistSeq, BoardState.PUBLIC);
+            boards = boardRepository.findByArtist_seqAndState(artistSeq, BoardState.PUBLIC, pageable);
 
-        return boards.stream().map(board -> BoardsResponseDto.of(board, getComment(board.getSeq()).size())).toList();
+        return boards.stream().map(board -> BoardsResponseDto.of(board, commentRepository.countByBoard_Seq(board.getSeq()))).toList();
     }
 
-    public BoardResponseDto getBoard(Long boardSeq){
+    public BoardResponseDto getBoard(Long boardSeq, Pageable pageable){
         CustomUserDetails user = AuthUtil.getCustomUserDetails();
 
         Board board = boardRepository.findBySeq(boardSeq)
@@ -86,11 +87,22 @@ public class BoardService {
         }
 
         List<Source> sources = sourceRepository.findByBoard_seq(boardSeq);
-        List<CommentResponseDto> comments = getComment(boardSeq);
+        List<CommentResponseDto> comments = getComment(boardSeq, pageable);
 
         return BoardResponseDto.of(board, sources, comments);
     }
+    public CommonResponse updateComment(CommentRequestDto commentRequestDto, Long commentSeq){
+        CustomUserDetails user = AuthUtil.getCustomUserDetails();
+        Comment comment = commentRepository.findBySeq(commentSeq)
+                        .orElseThrow(()->new BusinessException(COMMENT_NOT_FOUND));
 
+        artistCertification(user.getSeq(), comment.getArtist());
+
+        comment.changeContent(commentRequestDto.getContent());
+        comment.changeUpdatedAt();
+
+        return new CommonResponse("댓글 수정 완료");
+    }
     public CommonResponse createComment(CommentRequestDto commentRequestDto){
         CustomUserDetails user = AuthUtil.getCustomUserDetails();
 
@@ -133,8 +145,8 @@ public class BoardService {
         comment.delete();
         return new CommonResponse("댓글 삭제 완료");
     }
-    public List<CommentResponseDto> getComment(Long boardSeq){
-        List<Comment> comments = commentRepository.findByBoard_Seq(boardSeq);
+    public List<CommentResponseDto> getComment(Long boardSeq, Pageable pageable){
+        List<Comment> comments = commentRepository.findByBoard_Seq(boardSeq, pageable);
         return comments.stream().map(CommentResponseDto::of).toList();
     }
 
@@ -195,5 +207,33 @@ public class BoardService {
                 throw new BusinessException(BOARD_GRANT_FAIL);
         } else if(!artist.getSeq().equals(userSeq)) throw new BusinessException(BOARD_GRANT_FAIL);
     }
+    public CommonResponse updateBoard(Long boardSeq, BoardRequestDto boardRequestDto, List<MultipartFile> files){
+        CustomUserDetails user = AuthUtil.getCustomUserDetails();
+        Board board = boardRepository.findBySeq(boardSeq).orElseThrow(()-> new BusinessException(BOARD_NOT_FOUND));
+        artistCertification(user.getSeq(), board.getArtist());
 
+        sourceRepository.deleteByBoard_seq(boardSeq);
+        if(files != null){
+            List<String> fileNameList = s3FileService.uploadFiles(files);
+
+            fileNameList.forEach(filename -> {
+                Source source = Source.builder().board(board).name(filename).build();
+
+                sourceRepository.save(source);
+            });
+        }
+        board.changeTitle(boardRequestDto.getTitle());
+        board.changeContent(boardRequestDto.getContent());
+        board.changeState(BoardState.of(boardRequestDto.getState()));
+        board.changeUpdatedAt();
+        return new CommonResponse("글 수정 완료");
+    }
+    public CommonResponse deleteBoard(Long boardSeq){
+        CustomUserDetails user = AuthUtil.getCustomUserDetails();
+        Board board = boardRepository.findBySeq(boardSeq).orElseThrow(()-> new BusinessException(BOARD_NOT_FOUND));
+
+        board.changeState(BoardState.INACTIVE);
+        board.changeUpdatedAt();
+        return new CommonResponse("글 수정 완료");
+    }
 }

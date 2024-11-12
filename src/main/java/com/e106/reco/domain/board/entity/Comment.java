@@ -63,4 +63,10 @@ public class Comment {
     public void delete() {
         this.state = CommentState.INACTIVE;
     }
+    public void changeContent(String content) {
+        this.content = content;
+    }
+    public void changeUpdatedAt() {
+            this.updatedAt = LocalDateTime.now();
+    }
 }

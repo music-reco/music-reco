@@ -24,7 +24,7 @@
 //    private final String PREFIX_ROOM = "/Room:";
 //    private final int LIMIT_TIME = 60*24; // 프로필 유효 시간 1일
 //
-//    private final ReactiveRedisTemplate<String, ChatArtistState> redisTemplate; // Redis
+//    private final ReactiveRedisTemplate<String, String> redisTemplate; // Redis
 //    private final ArtistRepository artistRepository;
 //    private final ChatRoomRepository chatRoomRepository;
 //
