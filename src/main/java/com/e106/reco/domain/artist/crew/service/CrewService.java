@@ -213,4 +213,12 @@ public class CrewService {
 
         return CrewInfoDto.of(crew, crewUsers);
     }
+
+    public List<UserSummaryDto> waitngCrew(Long crewSeq) {
+        CustomUserDetails userDetails = AuthUtil.getCustomUserDetails();
+        Crew crew = crewRepository.findBySeqAndManagerSeq(crewSeq, userDetails.getSeq()).orElseThrow(()->new BusinessException(USER_NOT_MASTER));
+        List<CrewUser> crewUsers = crewUserRepository.findWatingCrewUsersByCrewSeq(crewSeq);
+
+        return crewUsers.stream().map(crewUser -> UserSummaryDto.of(crewUser.getUser())).toList();
+    }
 }

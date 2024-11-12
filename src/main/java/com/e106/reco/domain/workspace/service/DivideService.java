@@ -10,7 +10,6 @@ import com.e106.reco.domain.workspace.entity.converter.StemType;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,7 +19,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -40,14 +38,14 @@ public class DivideService {
         }
     }
 
-    @Async(value = "asyncExecutor1")
-    public CompletableFuture<AudioDivideResponse> divideAudioFile(
-            File file, String contentType, String stemValue, String splitterValue) {
-        log.info("Processing file: {} with contentType: {}", file.getName(), contentType);
-//        validateAudioFile(file, contentType);
+    public AudioDivideResponse divideAudioFile(MultipartFile file, String stemValue, String splitterValue) {
+        validateAudioFile(file);
         validateStemAndSplitter(stemValue, splitterValue);
 
+        File tempFile = null;
         try {
+            tempFile = createTempFile(file);
+
             SplitParams params = SplitParams.builder()
                     .stem(stemValue)
                     .splitter(splitterValue)
@@ -55,16 +53,20 @@ public class DivideService {
                     .build();
 
             FileResult result = lalalAiClient.splitAndWait(
-                    file,
+                    tempFile,
                     params,
                     Duration.ofSeconds(2),
                     Duration.ofMinutes(5)
             );
 
-            return CompletableFuture.completedFuture(convertToResponse(result));
-        } catch (Exception e) {
-            log.error("Error processing file: {}", file.getName(), e);
+            return convertToResponse(result);
+
+        } catch (IOException e) {
             throw new RuntimeException("Failed to process audio file: " + e.getMessage());
+        } finally {
+            if (tempFile != null && tempFile.exists()) {
+                tempFile.delete();
+            }
         }
     }
 
@@ -91,35 +93,19 @@ public class DivideService {
         }
     }
 
-    private void validateAudioFile(File file, String contentType) {
-        if (!file.exists() || file.length() == 0) {
+    private void validateAudioFile(MultipartFile file) {
+        if (file.isEmpty()) {
             throw new RuntimeException("Empty file provided");
         }
 
-        // 파일 크기 체크
-        long maxSize = 2L * 1024 * 1024 * 1024; // 2GB
-        if (file.length() > maxSize) {
-            throw new RuntimeException("File size exceeds maximum limit of 2GB");
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("audio/")) {
+            throw new RuntimeException("Invalid file type. Only audio files are allowed");
         }
-        log.info("contentType : {}", contentType);
-        // Content-Type이 없는 경우 파일 확장자로 체크
-        if (contentType == null) {
-            String fileName = file.getName().toLowerCase();
-            boolean isAudioFile = fileName.endsWith(".mp3") ||
-                    fileName.endsWith(".wav") ||
-                    fileName.endsWith(".m4a") ||
-                    fileName.endsWith(".aac") ||
-                    fileName.endsWith(".wma") ||
-                    fileName.endsWith(".ogg");
 
-            if (!isAudioFile) {
-                throw new RuntimeException("Invalid file type. Only audio files are allowed");
-            }
-        } else {
-            // Content-Type으로 체크
-            if (!contentType.startsWith("audio_")) {
-                throw new RuntimeException("Invalid content type. Only audio files are allowed");
-            }
+        long maxSize = 2L * 1024 * 1024 * 1024; // 2GB
+        if (file.getSize() > maxSize) {
+            throw new RuntimeException("File size exceeds maximum limit of 2GB");
         }
     }
 

@@ -6,6 +6,7 @@ spring:
     include: auth
     active: prod
 
+
   servlet:
     multipart:
       enabled: true
@@ -34,10 +35,3 @@ logging:
         type:
           descriptor:
             sql: trace
-      springframework:
-        web:
-          multipart: DEBUG
-#server:
-#  tomcat:
-#    max-http-form-post-size: 100MB
-#    max-swallow-size: 100MB

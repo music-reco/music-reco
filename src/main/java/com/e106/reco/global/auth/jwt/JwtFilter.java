@@ -66,20 +66,15 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
-        Authentication authToken = createAuthentication(token);
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-
-        filterChain.doFilter(request, response);
-    }
-    private Authentication createAuthentication(String token) {
         List<Long> crews = new ArrayList<>();
         if(jwtUtil.getCrews(token).length()== 1) crews.add(Long.parseLong(jwtUtil.getCrews(token)));
         else if(jwtUtil.getCrews(token).length()>1)
             crews = Arrays.stream(jwtUtil.getCrews(token).split(" "))
-                    .map(Long::parseLong)
-                    .toList();
+                .map(Long::parseLong)
+                .toList();
 
-        CustomUserDetails customUserDetails = CustomUserDetails.builder()
+        CustomUserDetails customUserDetails
+         = CustomUserDetails.builder()
                 .seq(jwtUtil.getSeq(token))
                 .nickname(jwtUtil.getNickname(token))
                 .email(jwtUtil.getEmail(token))
@@ -92,6 +87,9 @@ public class JwtFilter extends OncePerRequestFilter {
                 .role(null)
                 .build();
 
-        return new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
+        Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+
+        filterChain.doFilter(request, response);
     }
 }

@@ -7,6 +7,7 @@ import com.e106.reco.domain.artist.crew.dto.CrewGrantDto;
 import com.e106.reco.domain.artist.crew.dto.CrewInfoDto;
 import com.e106.reco.domain.artist.crew.dto.CrewRoleDto;
 import com.e106.reco.domain.artist.crew.service.CrewService;
+import com.e106.reco.domain.artist.user.dto.UserSummaryDto;
 import com.e106.reco.global.common.CommonResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -82,6 +83,11 @@ public class CrewController {
     @GetMapping("/grant/{crewSeq}")
     public ResponseEntity<List<CrewRoleDto>> roleCrew(@PathVariable Long crewSeq){
         return ResponseEntity.ok(crewService.roleCrew(crewSeq));
+    }
+
+    @GetMapping("/waiting/{crewSeq}")
+    public ResponseEntity<List<UserSummaryDto>> waitingCrew(@PathVariable Long crewSeq){
+        return ResponseEntity.ok(crewService.waitngCrew(crewSeq));
     }
 
 }
