@@ -88,7 +88,7 @@ public class WorkspaceController {
     }
 
     @GetMapping("/artists/{artistSeq}/workspaces")
-    public ResponseEntity<List<WorkspaceResponse>> getAllWorkspaces(@PathVariable Long artistSeq,
+    public ResponseEntity<WorkspaceResponse> getAllWorkspaces(@PathVariable Long artistSeq,
                                                                     @PageableDefault(direction = Sort.Direction.DESC, sort = "seq") Pageable pageable) {
         return ResponseEntity.ok(workspaceService.getWorkspaceList(artistSeq, pageable));
     }

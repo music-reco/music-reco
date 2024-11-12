@@ -137,14 +137,14 @@ public class WorkspaceService {
         }
     }
     @Transactional(readOnly = true)
-    public List<WorkspaceResponse> getWorkspaceList(Long artistSeq, Pageable pageable) {
+    public WorkspaceResponse getWorkspaceList(Long artistSeq, Pageable pageable) {
 
         if(!Objects.equals(artistSeq, AuthUtil.getCustomUserDetails().getSeq()))
             throw new BusinessException(WorkspaceErrorCode.ROLE_NOT_MATCHED);
         Page<Workspace> byArtistSeqAndStateNot = workspaceRepository.findByArtistSeqAndStateNot(artistSeq, WorkspaceState.INACTIVE, pageable);
-        return byArtistSeqAndStateNot.stream()
-                .map(workspace -> toResponse(workspace, byArtistSeqAndStateNot.getTotalPages()))
-                .toList();
+        return toResponse(byArtistSeqAndStateNot.stream()
+                .map(this::toDto)
+                .toList(), byArtistSeqAndStateNot.getTotalPages());
     }
 
     @Transactional(readOnly = true)
@@ -311,20 +311,22 @@ public class WorkspaceService {
                 .build();
     }
 
-    private WorkspaceResponse toResponse(Workspace workspace, Integer totalPages) {
-        return WorkspaceResponse.builder()
-                .workspaceDto(WorkspaceDto.builder()
+    private WorkspaceDto toDto(Workspace workspace) {
+        return WorkspaceDto.builder()
                         .workspaceSeq(workspace.getSeq())
                         .name(workspace.getName())
                         .state(workspace.getState())
                         .thumbnail(s3FileService.getFile(workspace.getThumbnail()))
                         .originTitle(workspace.getOriginTitle())
                         .originSinger(workspace.getOriginSinger())
-                        .build())
+                        .build();
+    }
+    private WorkspaceResponse toResponse(List<WorkspaceDto> workspaces, Integer totalPages) {
+        return WorkspaceResponse.builder()
+                .workspaceDto(workspaces)
                 .totalPage(totalPages)
                 .build();
     }
-
     private SoundResponse toSoundResponse(Sound sound) {
         return SoundResponse.builder()
                 .soundSeq(sound.getSeq())
