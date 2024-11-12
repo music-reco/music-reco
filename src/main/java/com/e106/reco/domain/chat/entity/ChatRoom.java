@@ -60,8 +60,8 @@ public class ChatRoom {
         private Long roomSeq;
     }
 
-    public void leaveChatRoom(RoomState state) {
-        this.state = RoomState.INACTIVE;
+    public void leaveChatRoom() {
+        if(this.state.equals(RoomState.ACTIVE)) this.state = RoomState.INACTIVE;
         this.joinAt = null;
     }
     public void joinChatRoom() {

@@ -29,6 +29,7 @@ public class ChatArtistRepository {
                 artist.getProfileImage()+"\n"+artist.getNickname(),
                 Duration.ofSeconds(LIMIT_TIME));
     }
+
     public Mono<String> getChatUser(String artistSeq) {
         if (chatArtistRedisTemplate.hasKey(PREFIX_CHAT + artistSeq).equals(Boolean.FALSE)) {
             Artist artist = artistRepository.findBySeq(Long.parseLong(artistSeq))
