@@ -59,7 +59,7 @@ public class BoardController {
     }
 
     @GetMapping("/artists/{artistSeq}")
-    public ResponseEntity<List<BoardsResponseDto>> getBoards(@PathVariable Long artistSeq,
+    public ResponseEntity<BoardsResponseDto> getBoards(@PathVariable Long artistSeq,
                                                              @PageableDefault(direction = Sort.Direction.DESC, sort = "seq") Pageable pageable){
         return ResponseEntity.ok(boardService.getBoards(artistSeq, pageable));
     }

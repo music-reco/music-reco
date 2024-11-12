@@ -2,6 +2,7 @@ package com.e106.reco.domain.chat.controller;
 
 import com.e106.reco.domain.chat.dto.RoomRequest;
 import com.e106.reco.domain.chat.entity.Chat;
+import com.e106.reco.domain.chat.entity.ChatArtist;
 import com.e106.reco.domain.chat.repository.ChatRepository;
 import com.e106.reco.domain.chat.service.ChatService;
 import lombok.RequiredArgsConstructor;
@@ -50,6 +51,10 @@ public class ChatController {
         return chatService.sendMsg(chat);
     }
 
+    @GetMapping("/webflux/artistInfo/{roomSeq}")
+    public Flux<ChatArtist> getArtistInfo(@PathVariable("roomSeq") String roomSeq) {
+        return chatService.getArtistInfo(roomSeq);
+    }
 
 
 

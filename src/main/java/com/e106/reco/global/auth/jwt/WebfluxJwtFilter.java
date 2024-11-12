@@ -37,6 +37,7 @@ public class WebfluxJwtFilter implements WebFilter {
         ServerHttpRequest request = exchange.getRequest();
         String accessToken = request.getHeaders().getFirst("Authorization");
 
+
         // 토큰이 없다면 다음 필터로 넘김
         if (accessToken == null || !accessToken.startsWith("Bearer ")) {
             return chain.filter(exchange);
