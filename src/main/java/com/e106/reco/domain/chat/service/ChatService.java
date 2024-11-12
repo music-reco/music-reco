@@ -57,6 +57,8 @@ public class ChatService {
 //        return chatRepository.mFindByGroupSeqAfterJoin(roomSeq, )
 //            .subscribeOn(Schedulers.boundedElastic());
 //    }
+    public void leave(Long roomSeq, Long artistSeq) {
+        CustomUserDetails customUserDetails = AuthUtil.getCustomUserDetails();
 
     public Flux<ChatArtist> getArtistInfo(String roomSeq) {
 //        List<Long> artists = chatRoomRepository.artistSeqFindByRoomSeq(Long.parseLong(roomSeq));
