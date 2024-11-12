@@ -41,7 +41,7 @@ public class SecurityConfig {
         return web -> web
                 .ignoring()
                 .requestMatchers("/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs/**"
-                        ,"/actuator/**", "/images/**", "/js/**", "/css/**", "/ws/**","/api/chats/**");
+                        ,"/actuator/**", "/images/**", "/js/**", "/css/**", "/ws/**","/api/chats/webflux/**");
     }
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {

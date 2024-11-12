@@ -7,6 +7,7 @@ import com.e106.reco.domain.chat.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,23 +27,30 @@ public class ChatController {
     private final ChatRepository chatRepository;
 
     @PostMapping("/group")
-    public Long createGroupChatRoom(RoomRequest roomRequest) {
+    public Long createGroupChatRoom(@RequestBody RoomRequest roomRequest) {
         return chatService.createGroupChatRoom(roomRequest);
     }
-//    @PostMapping("/single")
-//    public Long createSingleChatRoom(RoomRequest roomRequest) {
-//        return chatService.createSingleChatRoom(roomRequest);
-//    }
-
-    @PostMapping
-    public Mono<Chat> postMsg(@RequestBody Chat chat) {
-        return chatService.sendMsg(chat);
+    @PostMapping("/single")
+    public Long createSingleChatRoom(@RequestBody RoomRequest roomRequest) {
+        return chatService.createSingleChatRoom(roomRequest);
     }
     @PostMapping("/invite/{roomSeq}/{artistSeq}")
     private void invite(@PathVariable("roomSeq") Long roomSeq, @PathVariable("artistSeq") Long artistSeq) {
         chatService.invite(roomSeq, artistSeq);
 //        return
     }
+    @DeleteMapping("/leave/{roomSeq}/{artistSeq}")
+    private void leave(@PathVariable("roomSeq") Long roomSeq, @PathVariable("artistSeq") Long artistSeq) {
+        chatService.leave(roomSeq, artistSeq);
+//        return
+    }
+
+    @PostMapping("/webflux")
+    public Mono<Chat> postMsg(@RequestBody Chat chat) {
+        return chatService.sendMsg(chat);
+    }
+
+
 
 
 
@@ -52,7 +60,7 @@ public class ChatController {
 //        return chatService.findByPk(groupSeq);
 //    }
 
-    @GetMapping(value = "/{roomSeq}/{artistSeq}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping(value = "/webflux/{roomSeq}/{artistSeq}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<Chat> getMsg(@PathVariable("artistSeq")Long artistSeq, @PathVariable("roomSeq")String roomSeq) {
         return chatRepository.mFindByRoomSeq(roomSeq).subscribeOn(Schedulers.boundedElastic());
     }
