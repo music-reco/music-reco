@@ -5,26 +5,44 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString
 public class BoardsResponseDto {
-    private Long seq;
-    private String title;
-    private String state;
-    private int comments;
-//    private int likes;
+    private ArtistSummaryDto artistSummary;
+    private List<BoardResponseDto> boards;
 
-    public static BoardsResponseDto of(Board board, int comments) {
-        return BoardsResponseDto.builder()
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    private static class BoardResponseDto {
+
+        private Long seq;
+        private String title;
+        private String state;
+        private int comments;
+        private LocalDateTime createTime;
+        private int likes;
+    }
+
+    public static BoardResponseDto of(Board board, int comments) {
+        return BoardResponseDto.builder()
                 .seq(board.getSeq())
                 .state(board.getState().name())
                 .title(board.getTitle())
                 .comments(comments)
+                .build();
+    }
+    public static BoardsResponseDto of(List<BoardResponseDto> boards, ArtistSummaryDto artistSummary) {
+        return BoardsResponseDto.builder()
+                .artistSummary(artistSummary)
+                .boards(boards)
                 .build();
     }
 }
