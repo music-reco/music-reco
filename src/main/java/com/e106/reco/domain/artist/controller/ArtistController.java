@@ -30,7 +30,7 @@ public class ArtistController {
         return artistRepository.findByNickname(word)
                 .stream().map(artist -> ArtistSummaryDto.builder()
                         .nickname(artist.getNickname())
-                        .profileImage(artist.getNickname())
+                        .profileImage(artist.getProfileImage())
                         .position(artist.getPosition())
                         .seq(artist.getSeq())
                         .email(artist.getPosition() != Position.CREW ? userRepository.findBySeq(artist.getSeq()).get().getEmail() : null)
