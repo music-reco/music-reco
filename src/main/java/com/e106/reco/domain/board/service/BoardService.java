@@ -99,8 +99,8 @@ public class BoardService {
         Board board = boardRepository.findBySeq(commentRequestDto.getBoardSeq())
                 .orElseThrow(()-> new BusinessException(BOARD_NOT_FOUND));
         Comment parentComment = commentRequestDto.getParentCommentSeq()!=null ?
-            commentRepository.findBySeq(commentRequestDto.getParentCommentSeq())
-                    .orElseThrow(() -> new BusinessException(COMMENT_NOT_FOUND)) : null;
+                commentRepository.findBySeq(commentRequestDto.getParentCommentSeq())
+                        .orElseThrow(() -> new BusinessException(COMMENT_NOT_FOUND)) : null;
 
         if(parentComment != null && parentComment.getParent()!=null)
             throw new BusinessException(COMMENT_DEEP_ONLY_ONE);
@@ -110,11 +110,11 @@ public class BoardService {
         artistCertification(user.getSeq(), artist);
 
         commentRepository.save(Comment.builder()
-                        .parent(parentComment)
-                        .board(board)
-                        .artist(artist)
-                        .content(commentRequestDto.getContent())
-                        .build()
+                .parent(parentComment)
+                .board(board)
+                .artist(artist)
+                .content(commentRequestDto.getContent())
+                .build()
         );
         return new CommonResponse("댓글 생성 완료");
     }
@@ -162,12 +162,12 @@ public class BoardService {
 //            }
 //        }
         Board board = Board.builder()
-                        .artist(artist)
-                        .title(boardRequestDto.getTitle())
-                        .content(boardRequestDto.getContent())
-                        .state(BoardState.of(boardRequestDto.getState()))
-                        .thumbnail(null)
-                        .build();
+                .artist(artist)
+                .title(boardRequestDto.getTitle())
+                .content(boardRequestDto.getContent())
+                .state(BoardState.of(boardRequestDto.getState()))
+                .thumbnail(null)
+                .build();
 
         boardRepository.save(board);
 

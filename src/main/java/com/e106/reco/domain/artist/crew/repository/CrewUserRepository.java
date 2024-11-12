@@ -25,4 +25,8 @@ public interface CrewUserRepository extends JpaRepository<CrewUser, CrewUser.PK>
     Optional<CrewUser> findByPkAndState(CrewUser.PK pk, CrewUserState state);
 
     Optional<CrewUser> findCrewUserByPk(CrewUser.PK pk);
+
+    @Query("select c from CrewUser c where c.pk.crewSeq = :crewSeq " +
+            "AND c.state = com.e106.reco.domain.artist.crew.entity.CrewUserState.WAITING")
+    List<CrewUser> findWatingCrewUsersByCrewSeq(Long crewSeq);
 }
