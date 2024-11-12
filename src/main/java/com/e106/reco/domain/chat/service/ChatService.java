@@ -31,7 +31,6 @@ import static com.e106.reco.global.error.errorcode.ArtistErrorCode.ARTIST_NOT_FO
 import static com.e106.reco.global.error.errorcode.ChatErrorCode.CHAT_GRANT_FAIL;
 import static com.e106.reco.global.error.errorcode.ChatErrorCode.CHAT_NOT_ALLOW_GROUP_CHAT;
 import static com.e106.reco.global.error.errorcode.ChatErrorCode.ROOM_NOT_FOUND;
-import static com.e106.reco.global.error.errorcode.ChatErrorCode.SINGLE_CHAT_ONLY_ONE_RECEIVER;
 import static com.e106.reco.global.error.errorcode.CrewErrorCode.CREW_USER_NOT_FOUND;
 
 @Service
@@ -82,35 +81,38 @@ public class ChatService {
         chat.setCreatedAt(LocalDateTime.now());
         return chatRepository.save(chat);
     }
-    public Long createSingleChatRoom(RoomRequest roomRequest) {
-        CustomUserDetails user = AuthUtil.getCustomUserDetails();
-
-        if(roomRequest.getReceiversSeq().size()!=1) throw new BusinessException(SINGLE_CHAT_ONLY_ONE_RECEIVER);
-
-        Artist sender = artistRepository.findBySeq(roomRequest.getSenderSeq())
-                        .orElseThrow(()-> new BusinessException(ARTIST_NOT_FOUND));
-        artistCertification(user.getSeq(), sender);
-        Artist receiver = artistRepository.findBySeq(roomRequest.getReceiversSeq().getFirst())
-                        .orElseThrow(()-> new BusinessException(ARTIST_NOT_FOUND));
-
-        Room room = roomRepository.save(Room.builder().build());
-
-        chatRoomRepository.save(ChatRoom.builder()
-                        .artist(sender)
-                        .room(room)
-                        .joinAt(LocalDateTime.now())
-                        .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(sender.getSeq()).build())
-                        .state(RoomState.PERSONAL)
-                        .build());
-        chatRoomRepository.save(ChatRoom.builder()
-                        .artist(receiver)
-                        .room(room)
-                        .joinAt(LocalDateTime.now())
-                        .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(receiver.getSeq()).build())
-                        .state(RoomState.PERSONAL)
-                        .build());
-        return room.getSeq();
-    }
+//    public Long createSingleChatRoom(RoomRequest roomRequest) {
+//        Long userSeq = AuthUtil.getWebfluxCustomUserDetails()
+//                .flatMap(customUserDetails -> Mono.justOrEmpty(customUserDetails.getSeq())
+//                .
+//
+//
+//        if(roomRequest.getReceiversSeq().size()!=1) throw new BusinessException(SINGLE_CHAT_ONLY_ONE_RECEIVER);
+//
+//        Artist sender = artistRepository.findBySeq(roomRequest.getSenderSeq())
+//                        .orElseThrow(()-> new BusinessException(ARTIST_NOT_FOUND));
+//        artistCertification(user.getSeq(), sender);
+//        Artist receiver = artistRepository.findBySeq(roomRequest.getReceiversSeq().getFirst())
+//                        .orElseThrow(()-> new BusinessException(ARTIST_NOT_FOUND));
+//
+//        Room room = roomRepository.save(Room.builder().build());
+//
+//        chatRoomRepository.save(ChatRoom.builder()
+//                        .artist(sender)
+//                        .room(room)
+//                        .joinAt(LocalDateTime.now())
+//                        .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(sender.getSeq()).build())
+//                        .state(RoomState.PERSONAL)
+//                        .build());
+//        chatRoomRepository.save(ChatRoom.builder()
+//                        .artist(receiver)
+//                        .room(room)
+//                        .joinAt(LocalDateTime.now())
+//                        .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(receiver.getSeq()).build())
+//                        .state(RoomState.PERSONAL)
+//                        .build());
+//        return room.getSeq();
+//    }
     public Long createGroupChatRoom(RoomRequest roomRequest){
         CustomUserDetails user = AuthUtil.getCustomUserDetails();
 

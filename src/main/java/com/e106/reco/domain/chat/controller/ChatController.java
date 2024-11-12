@@ -6,12 +6,10 @@ import com.e106.reco.domain.chat.repository.ChatRepository;
 import com.e106.reco.domain.chat.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,10 +29,11 @@ public class ChatController {
     public Long createGroupChatRoom(RoomRequest roomRequest) {
         return chatService.createGroupChatRoom(roomRequest);
     }
-    @PostMapping("/single")
-    public Long createSingleChatRoom(RoomRequest roomRequest) {
-        return chatService.createSingleChatRoom(roomRequest);
-    }
+//    @PostMapping("/single")
+//    public Long createSingleChatRoom(RoomRequest roomRequest) {
+//        return chatService.createSingleChatRoom(roomRequest);
+//    }
+
     @PostMapping
     public Mono<Chat> postMsg(@RequestBody Chat chat) {
         return chatService.sendMsg(chat);

@@ -8,10 +8,8 @@ import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
-import org.springframework.data.redis.core.ReactiveRedisOperations;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -42,24 +40,24 @@ public class RedisConfig {
         config.setPassword(password);
         return new LettuceConnectionFactory(config);
     }
-
     @Bean
-    public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
-        return new StringRedisTemplate(redisConnectionFactory);
+    public RedisTemplate<?, ?> redisTemplate() {
+        RedisTemplate<byte[], byte[]> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(redisConnectionFactory());
+        return redisTemplate;
     }
-
-
     @Bean
-    public ReactiveRedisOperations<String, Object> reactiveRedisTemplate() {
+    public ReactiveRedisTemplate<String, String> reactiveStringRedisTemplate() {
         ReactiveRedisConnectionFactory rrcf = reactiveRedisConnectionFactory();
 
-        Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(Object.class);
-
-        RedisSerializationContext.RedisSerializationContextBuilder<String, Object> builder = RedisSerializationContext
+        // String 타입에는 Jackson2JsonRedisSerializer를 사용하지 않고 StringRedisSerializer 사용
+        RedisSerializationContext.RedisSerializationContextBuilder<String, String> builder = RedisSerializationContext
                 .newSerializationContext(new StringRedisSerializer());
 
-        RedisSerializationContext<String, Object> context = builder.value(serializer).hashValue(serializer)
-                .hashKey(serializer).build();
+        RedisSerializationContext<String, String> context = builder.value(new StringRedisSerializer())
+                .hashValue(new StringRedisSerializer())
+                .hashKey(new StringRedisSerializer())
+                .build();
 
         return new ReactiveRedisTemplate<>(rrcf, context);
     }

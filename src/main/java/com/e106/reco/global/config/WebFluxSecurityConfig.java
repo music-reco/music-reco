@@ -24,11 +24,11 @@ public class WebFluxSecurityConfig {
                 .cors(ServerHttpSecurity.CorsSpec::disable)
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance()) //session STATELESS
-//                .authorizeExchange(exchanges -> exchanges
-//                        .pathMatchers("*").permitAll() // WebSocket 연결 허용
-////                        .pathMatchers("/api/auth/**", "/error").permitAll()
-//                        .anyExchange().authenticated()
-//                )
+                .authorizeExchange(exchanges -> exchanges
+                        .pathMatchers("*").permitAll() // WebSocket 연결 허용
+//                        .pathMatchers("/api/auth/**", "/error").permitAll()
+                        .anyExchange().authenticated()
+                )
                 .addFilterBefore(webfluxJwtFilter, SecurityWebFiltersOrder.AUTHENTICATION)
                 .build();
     }
