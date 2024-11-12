@@ -115,7 +115,7 @@ public class WorkspaceController {
                                                       @RequestPart(value = "sessions") List<ModifyPoint> modifyPoints) {
         return ResponseEntity.ok(workspaceService.modifyPoint(workspaceSeq, modifyPoints));
     }
-    
+
     @PostMapping("/workspaces/{workspaceSeq}/state")
     public ResponseEntity<CommonResponse> modifyState(@PathVariable Long workspaceSeq,
                                                       @RequestBody ModifyState modifyState) {
