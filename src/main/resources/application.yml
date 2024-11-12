@@ -4,7 +4,8 @@ spring:
 
   profiles:
     include: auth
-    active: prod
+    active: dev
+
 
 
   servlet:
