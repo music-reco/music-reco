@@ -16,8 +16,8 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long>{
     @Query("select count(*) from ChatRoom where room = :room")
     int countByRoom(@Param("room") Room room);
 
-    @Query("select cr.artist.seq from ChatRoom cr where cr.room = :room")
-    List<Long> artistSeqFindByRoom(@Param("room") Room room);
+    @Query("select cr.artist.seq from ChatRoom cr where cr.room.seq = :roomSeq")
+    List<Long> artistSeqFindByRoomSeq(@Param("roomSeq") Long roomSeq);
 
     @Query("SELECT cr1.room " +
             "FROM ChatRoom cr1 " +
