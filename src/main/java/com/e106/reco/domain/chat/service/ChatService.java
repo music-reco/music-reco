@@ -21,8 +21,6 @@ import com.e106.reco.global.error.exception.BusinessException;
 import com.e106.reco.global.util.AuthUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -44,7 +42,6 @@ import static com.e106.reco.global.error.errorcode.CrewErrorCode.CREW_USER_NOT_F
 @RequiredArgsConstructor
 @Transactional
 public class ChatService {
-    private static final Logger log = LoggerFactory.getLogger(ChatService.class);
     private final RoomRepository roomRepository;
     private final ArtistRepository artistRepository;
     private final ChatRepository chatRepository;
@@ -57,8 +54,7 @@ public class ChatService {
 //        return chatRepository.mFindByGroupSeqAfterJoin(roomSeq, )
 //            .subscribeOn(Schedulers.boundedElastic());
 //    }
-    public void leave(Long roomSeq, Long artistSeq) {
-        CustomUserDetails customUserDetails = AuthUtil.getCustomUserDetails();
+
 
     public Flux<ChatArtist> getArtistInfo(String roomSeq) {
 //        List<Long> artists = chatRoomRepository.artistSeqFindByRoomSeq(Long.parseLong(roomSeq));
@@ -69,10 +65,11 @@ public class ChatService {
 
     public void leave(Long roomSeq, Long artistSeq) {
         CustomUserDetails customUserDetails = AuthUtil.getCustomUserDetails();
+        Artist artist = artistRepository.findBySeq(artistSeq).orElseThrow(()->new BusinessException(ARTIST_NOT_FOUND));
+        artistCertification(customUserDetails.getSeq(), artist);
 
         ChatRoom chatRoom = chatRoomRepository.findByPk(ChatRoom.PK.builder().roomSeq(roomSeq).artistSeq(artistSeq).build())
                 .orElseThrow(() -> new BusinessException(ROOM_NOT_FOUND));
-//        if(chatRoom.getState() == RoomState.PERSONAL) //TODO : 유저의 joinTime 병경
 
         if(chatRoom.getState() == RoomState.INACTIVE)
             throw new BusinessException(ARTIST_NOT_IN_CHAT);
@@ -85,6 +82,8 @@ public class ChatService {
 
         Artist artist = artistRepository.findBySeq(artistSeq)
                 .orElseThrow(() -> new BusinessException(ARTIST_NOT_FOUND));
+
+//        if(chatRoom.getState() == RoomState.PERSONAL) //TODO : 유저의 joinTime 병경
 
         if(artist.getPosition().equals(Position.CREW)) throw new BusinessException(CHAT_NOT_ALLOW_GROUP_CHAT);
 
