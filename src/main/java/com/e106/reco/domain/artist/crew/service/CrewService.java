@@ -130,7 +130,7 @@ public class CrewService {
         CrewUser crewUser = crewUserRepository.findById(
                         CrewUser.PK.builder()
                                 .crewSeq(declineDto.getCrewSeq())
-                                .userSeq(userDetails.getSeq())
+                                .userSeq(declineDto.getUserSeq())
                                 .build())
                 .filter(crewuser -> crewuser.getState() != CrewUserState.WAITING)
                 .orElseThrow(() -> new BusinessException(CREW_USER_NOT_FOUND));
