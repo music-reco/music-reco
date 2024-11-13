@@ -25,9 +25,9 @@ public class WebFluxSecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance()) //session STATELESS
                 .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/api/chats/**").permitAll() // WebSocket 연결 허용
+                        .pathMatchers("/api/chats/**").authenticated() // WebSocket 연결 허용
 //                        .pathMatchers("/api/auth/**", "/error").permitAll()
-                        .anyExchange().authenticated()
+                        .anyExchange().permitAll()
                 )
                 .addFilterBefore(webfluxJwtFilter, SecurityWebFiltersOrder.AUTHENTICATION)
                 .build();
