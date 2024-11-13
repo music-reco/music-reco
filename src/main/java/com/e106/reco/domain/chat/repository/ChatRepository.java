@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.data.mongodb.repository.Tailable;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public interface ChatRepository extends ReactiveMongoRepository<Chat, String> {
 //    @Tailable
@@ -18,4 +19,6 @@ public interface ChatRepository extends ReactiveMongoRepository<Chat, String> {
     @Tailable
     @Query("{roomSeq:?0}")
     Flux<Chat> mFindByRoomSeq(String roomSeq);
+
+    Mono<Chat> findTopByRoomSeqOrderByCreatedAtDesc(String roomSeq);
 }
