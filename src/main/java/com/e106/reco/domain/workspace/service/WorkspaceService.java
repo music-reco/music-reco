@@ -139,8 +139,6 @@ public class WorkspaceService {
     @Transactional(readOnly = true)
     public WorkspaceResponse getWorkspaceList(Long artistSeq, Pageable pageable) {
 
-        if(!Objects.equals(artistSeq, AuthUtil.getCustomUserDetails().getSeq()))
-            throw new BusinessException(WorkspaceErrorCode.ROLE_NOT_MATCHED);
         Page<Workspace> byArtistSeqAndStateNot = workspaceRepository.findByArtistSeqAndStateNot(artistSeq, WorkspaceState.INACTIVE, pageable);
         return toResponse(byArtistSeqAndStateNot.stream()
                 .map(this::toDto)
