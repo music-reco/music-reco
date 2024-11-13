@@ -1,11 +1,9 @@
 spring:
   application:
     name: reco
-
   profiles:
     include: auth
     active: dev
-
 #  mvc:
 #    contentnegotiation:
 #      favor-parameter: true
@@ -26,3 +24,5 @@ logging:
         type:
           descriptor:
             sql: trace
+server:
+  port: 8081
