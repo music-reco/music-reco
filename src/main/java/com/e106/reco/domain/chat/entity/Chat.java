@@ -22,4 +22,5 @@ public class Chat {
     private String roomSeq;
 
     private LocalDateTime createdAt;
+
 }

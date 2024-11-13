@@ -10,7 +10,7 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb+srv://ADMIN:SSAFY123@reco.mv9rf.mongodb.net/RECO
+      uri: mongodb+srv://ADMIN:SSAFY123@reco.mv9rf.mongodb.net/RECO?ssl=true
     redis:
       host: localhost
       port: 6379

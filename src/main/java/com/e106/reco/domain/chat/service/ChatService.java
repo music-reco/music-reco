@@ -7,7 +7,9 @@ import com.e106.reco.domain.artist.entity.Artist;
 import com.e106.reco.domain.artist.entity.Position;
 import com.e106.reco.domain.artist.user.dto.CustomUserDetails;
 import com.e106.reco.domain.board.repository.ArtistRepository;
+import com.e106.reco.domain.chat.dto.ChatRoomResponse;
 import com.e106.reco.domain.chat.dto.RoomRequest;
+import com.e106.reco.domain.chat.dto.RoomResponse;
 import com.e106.reco.domain.chat.entity.Chat;
 import com.e106.reco.domain.chat.entity.ChatArtist;
 import com.e106.reco.domain.chat.entity.ChatRoom;
@@ -66,6 +68,30 @@ public class ChatService {
 //                )
 //                .collectList(); // Mono<List<ChatArtist>>로 변환
 //    }
+    public Flux<RoomResponse> getChatRooms(Long artistSeq) {
+        Artist artist = artistRepository.findBySeq(artistSeq)
+                .orElseThrow(() -> new BusinessException(ARTIST_NOT_FOUND));
+
+        // 인증을 수행하지만, subscribe()를 하므로 비동기적 처리임에 유의
+        AuthUtil.getWebfluxCustomUserDetails()
+                .subscribe(user -> artistCertification(user.getSeq(), artist));
+
+        // 방 목록을 비동기 Flux로 변환
+        List<Room> rooms = chatRoomRepository.findExistRoomsByArtistSeq(artistSeq);
+
+        return Flux.fromIterable(rooms)
+                .flatMap(room -> chatRepository.findTopByRoomSeqOrderByCreatedAtDesc(room.getSeq().toString())
+                        .map(lastChat -> RoomResponse.builder()
+                                .roomSeq(room.getSeq())
+                                .lastMsg(lastChat.getMsg())
+                                .lastMsgTime(lastChat.getCreatedAt())
+                                .chatRoomResponses(chatRoomRepository.findExistNameRoomsByRoomSeq(room.getSeq())
+                                        .stream().map(ChatRoomResponse::of).toList()
+                                )
+                                .build()
+                        )
+                );
+    }
 
     public Flux<ChatArtist> getArtistInfo(Long roomSeq) {
         // roomSeq에 해당하는 artistSeq 리스트 조회
@@ -124,9 +150,9 @@ public class ChatService {
         chatRoomRepository.save(chatRoom);
     }
     public Mono<Chat> sendMsg(Chat chat){
-       Artist artist = artistRepository.findBySeq(Long.parseLong(chat.getArtistSeq()))
+        Artist artist = artistRepository.findBySeq(Long.parseLong(chat.getArtistSeq()))
             .orElseThrow(()->new BusinessException(ARTIST_NOT_FOUND));
-       AuthUtil.getWebfluxCustomUserDetails()
+        AuthUtil.getWebfluxCustomUserDetails()
                 .subscribe(user -> artistCertification(user.getSeq(), artist));
         chat.setCreatedAt(LocalDateTime.now());
         return chatRepository.save(chat);

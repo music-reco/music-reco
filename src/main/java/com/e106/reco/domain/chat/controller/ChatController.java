@@ -1,6 +1,7 @@
 package com.e106.reco.domain.chat.controller;
 
 import com.e106.reco.domain.chat.dto.RoomRequest;
+import com.e106.reco.domain.chat.dto.RoomResponse;
 import com.e106.reco.domain.chat.entity.Chat;
 import com.e106.reco.domain.chat.entity.ChatArtist;
 import com.e106.reco.domain.chat.repository.ChatRepository;
@@ -59,6 +60,8 @@ public class ChatController {
 
 
 
+
+
 //    @GetMapping(value = "/artists/{roomSeq}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 //    public Flux<Chat> getArtists(@PathVariable("roomSeq")String groupSeq) {
 //        return chatService.findByPk(groupSeq);
@@ -69,7 +72,10 @@ public class ChatController {
         return chatRepository.mFindByRoomSeq(roomSeq).subscribeOn(Schedulers.boundedElastic());
     }
 
-
+    @GetMapping(value = "/webflux/{artistSeq}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public  Flux<RoomResponse> getChatRooms(@PathVariable("artistSeq")Long artistSeq) {
+        return chatService.getChatRooms(artistSeq);
+    }
 
 
 //    @GetMapping(value = "/sender/{sender}/receiver/{receiver}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
