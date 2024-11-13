@@ -18,4 +18,4 @@ spring:
       port: ${SPRING_REDIS_PORT}
       password: ${SPRING_REDIS_PASSWORD}
     mongodb:
-      uri: mongodb+srv://ADMIN:SSAFY123@reco.mv9rf.mongodb.net/reco?ssl=true
+      uri: mongodb+srv://ADMIN:SSAFY123@reco.mv9rf.mongodb.net/?retryWrites=true&w=majority&appName=RECO
