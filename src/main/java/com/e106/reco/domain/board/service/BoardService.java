@@ -67,7 +67,7 @@ public class BoardService {
                 artist.getPosition() != Position.CREW && user.getSeq().equals(artistSeq))
             boards = boardRepository.findByArtist_seq(artistSeq, pageable);
         else
-            boards = boardRepository.findByArtist_seqAndState(artistSeq, BoardState.PUBLIC, pageable);
+            boards = boardRepository.findPublicBoardByArtist_seq(artistSeq, pageable);
 
         return BoardsResponseDto.of(
                 boards.stream().map(board -> BoardsResponseDto.of(board, commentRepository.countByBoard_Seq(board.getSeq()))).toList(),
@@ -235,6 +235,7 @@ public class BoardService {
     public CommonResponse deleteBoard(Long boardSeq){
         CustomUserDetails user = AuthUtil.getCustomUserDetails();
         Board board = boardRepository.findBySeq(boardSeq).orElseThrow(()-> new BusinessException(BOARD_NOT_FOUND));
+        artistCertification(user.getSeq(), board.getArtist());
 
         board.changeState(BoardState.INACTIVE);
         board.changeUpdatedAt();
