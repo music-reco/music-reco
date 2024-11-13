@@ -51,12 +51,11 @@ public class ChatController {
         return chatService.sendMsg(chat);
     }
 
-    @GetMapping("/webflux/artistInfo/{roomSeq}")
-    public Flux<ChatArtist> getArtistInfo(@PathVariable("roomSeq") String roomSeq) {
+
+    @GetMapping(value = "/webflux/artistInfo/{roomSeq}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<ChatArtist> getArtistInfo(@PathVariable("roomSeq") Long roomSeq) {
         return chatService.getArtistInfo(roomSeq);
     }
-
-
 
 
 

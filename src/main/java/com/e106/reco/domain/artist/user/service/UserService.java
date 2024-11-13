@@ -4,6 +4,9 @@ import com.e106.reco.domain.artist.crew.repository.CrewUserRepository;
 import com.e106.reco.domain.artist.user.dto.UserInfoDto;
 import com.e106.reco.domain.artist.user.entity.User;
 import com.e106.reco.domain.artist.user.repository.UserRepository;
+import com.e106.reco.domain.chat.entity.ChatArtist;
+import com.e106.reco.domain.chat.repository.ChatArtistMongoRepository;
+import com.e106.reco.domain.chat.repository.ChatArtistRedisRepository;
 import com.e106.reco.global.auth.dto.JoinDto;
 import com.e106.reco.global.error.exception.BusinessException;
 import com.e106.reco.global.s3.S3FileService;
@@ -26,7 +29,9 @@ import static com.e106.reco.global.error.errorcode.AuthErrorCode.USER_NOT_FOUND;
 public class UserService {
     private final CrewUserRepository crewUserRepository;
     private final UserRepository userRepository;
+    private final ChatArtistMongoRepository chatArtistMongoRepository;
     private final S3FileService s3FileService;
+    private final ChatArtistRedisRepository chatArtistRedisRepository;
 
     @Value("${spring.image.profile.user}")
     private String configProfile;
@@ -49,7 +54,8 @@ public class UserService {
 
         joinDto.setProfileImage(file == null ? configProfile : s3FileService.uploadFile(file));
         User.of(user, joinDto);
-
+        chatArtistRedisRepository.createChatUser(user);
+        chatArtistMongoRepository.save(ChatArtist.of(user));
         return getUserInfo(user);
     }
 }
