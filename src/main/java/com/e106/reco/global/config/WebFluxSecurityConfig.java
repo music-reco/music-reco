@@ -21,7 +21,7 @@ public class WebFluxSecurityConfig {
     @Bean
     public SecurityWebFilterChain springWebFilterChain(ServerHttpSecurity http) {
         return http
-                .cors(ServerHttpSecurity.CorsSpec::disable)
+                .cors(cors -> {})
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance()) //session STATELESS
                 .authorizeExchange(exchanges -> exchanges
