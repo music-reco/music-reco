@@ -3,8 +3,8 @@ networks:
     external: true
 
 services:
-  backend:
-    container_name: backend
+  backend_webflux:
+    container_name: backend_webflux
     build:
       context: .
       dockerfile: Dockerfile
