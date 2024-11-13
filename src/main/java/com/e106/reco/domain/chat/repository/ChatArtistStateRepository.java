@@ -1,4 +1,4 @@
-//package com.e106.reco.domain.chat.repository;
+package com.e106.reco.domain.chat.repository;//package com.e106.reco.domain.chat.repository;
 //
 //import com.e106.reco.domain.board.repository.ArtistRepository;
 //import com.e106.reco.domain.chat.entity.ChatArtistState;

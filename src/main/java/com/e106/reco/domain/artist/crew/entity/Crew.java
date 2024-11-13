@@ -1,7 +1,6 @@
 package com.e106.reco.domain.artist.crew.entity;
 
 import com.e106.reco.domain.artist.crew.dto.CreateDto;
-import com.e106.reco.domain.artist.crew.dto.CrewDto;
 import com.e106.reco.domain.artist.entity.Artist;
 import com.e106.reco.domain.artist.entity.Genre;
 import com.e106.reco.domain.artist.entity.Position;

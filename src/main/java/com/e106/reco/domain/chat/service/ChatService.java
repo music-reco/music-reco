@@ -5,8 +5,8 @@ import com.e106.reco.domain.artist.crew.entity.CrewUserState;
 import com.e106.reco.domain.artist.crew.repository.CrewUserRepository;
 import com.e106.reco.domain.artist.entity.Artist;
 import com.e106.reco.domain.artist.entity.Position;
+import com.e106.reco.domain.artist.repository.ArtistRepository;
 import com.e106.reco.domain.artist.user.dto.CustomUserDetails;
-import com.e106.reco.domain.board.repository.ArtistRepository;
 import com.e106.reco.domain.chat.dto.ChatRoomResponse;
 import com.e106.reco.domain.chat.dto.RoomRequest;
 import com.e106.reco.domain.chat.dto.RoomResponse;
@@ -115,7 +115,7 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
 
 
     public void leave(Long roomSeq, Long artistSeq) {
-        CustomUserDetails customUserDetails = AuthUtil.getCustomUserDetails();
+        CustomUserDetails customUserDetails = AuthUtil.getWebfluxCustomUserDetails().block();
         Artist artist = artistRepository.findBySeq(artistSeq).orElseThrow(()->new BusinessException(ARTIST_NOT_FOUND));
         artistCertification(customUserDetails.getSeq(), artist);
 
@@ -128,7 +128,7 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
         chatRoom.leaveChatRoom();
     }
     public void invite(Long roomSeq, Long artistSeq){
-        CustomUserDetails customUserDetails = AuthUtil.getCustomUserDetails();
+        CustomUserDetails customUserDetails = AuthUtil.getWebfluxCustomUserDetails().block();
 
         Room room = roomRepository.findBySeq(roomSeq).orElseThrow(() -> new BusinessException(ROOM_NOT_FOUND));
 
@@ -166,7 +166,7 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
         return chatRepository.save(chat);
     }
     public Long createSingleChatRoom(RoomRequest roomRequest) {
-        CustomUserDetails user = AuthUtil.getCustomUserDetails();
+        CustomUserDetails user = AuthUtil.getWebfluxCustomUserDetails().block();
 
         if(roomRequest.getReceiversSeq()==null || roomRequest.getReceiversSeq().size()!=1) throw new BusinessException(SINGLE_CHAT_ONLY_ONE_RECEIVER);
 
@@ -197,7 +197,7 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
         return room.getSeq();
     }
     public Long createGroupChatRoom(RoomRequest roomRequest){
-        CustomUserDetails user = AuthUtil.getCustomUserDetails();
+        CustomUserDetails user = AuthUtil.getWebfluxCustomUserDetails().block();
 
         Artist sender = artistRepository.findBySeq(roomRequest.getSenderSeq())
                 .orElseThrow(() -> new BusinessException(ARTIST_NOT_FOUND));

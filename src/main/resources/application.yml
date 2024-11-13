@@ -6,16 +6,6 @@ spring:
     include: auth
     active: dev
 
-
-
-  servlet:
-    multipart:
-      enabled: true
-      file-size-threshold: 100MB
-      max-file-size: 2GB
-      max-request-size: 2GB
-      location: ${TEMP_DIR:/app/temp}
-
 #  mvc:
 #    contentnegotiation:
 #      favor-parameter: true

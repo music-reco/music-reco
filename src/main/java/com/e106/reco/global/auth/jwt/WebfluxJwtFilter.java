@@ -3,14 +3,13 @@ package com.e106.reco.global.auth.jwt;
 import com.e106.reco.domain.artist.user.dto.CustomUserDetails;
 import com.e106.reco.global.error.exception.BusinessException;
 import io.jsonwebtoken.ExpiredJwtException;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -47,20 +46,20 @@ public class WebfluxJwtFilter implements WebFilter {
         try {
             jwtUtil.isExpired(token);
         } catch (ExpiredJwtException e) {
-            exchange.getResponse().setStatusCode(HttpStatusCode.valueOf(HttpServletResponse.SC_UNAUTHORIZED));
-            throw new BusinessException(TOKEN_EXPIRED);
+            return Mono.error(new BusinessException(TOKEN_EXPIRED));
         }
 
         // 토큰이 access인지 확인 (발급시 페이로드에 명시)
         if (!jwtUtil.getCategory(token).equals("access")) {
             //response body
-            throw new BusinessException(TOKEN_NOT_EXIST);
+            return Mono.error(new BusinessException(TOKEN_NOT_EXIST));
         }
 
         Authentication authToken = createAuthentication(token);
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
-        return chain.filter(exchange);
+        return chain.filter(exchange)
+                .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authToken));
     }
 
     private Authentication createAuthentication(String token) {

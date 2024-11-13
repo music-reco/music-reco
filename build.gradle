@@ -1,25 +1,11 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.3.3'
+    id 'org.springframework.boot' version '3.3.5'
     id 'io.spring.dependency-management' version '1.1.6'
 }
+
 group = 'com.e106'
-version = '1.0-SNAPSHOT'
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-}
-
-test {
-    useJUnitPlatform()
-}
-
-
+version = '0.0.1-SNAPSHOT'
 
 java {
     toolchain {
@@ -33,15 +19,15 @@ configurations {
     }
 }
 
+repositories {
+    mavenCentral()
+}
 
-
-dependencies {
-
-    implementation 'org.springframework.boot:spring-boot-starter-mail'
+dependencies {// redis
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     // redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
@@ -49,21 +35,12 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     // mongo
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
-    //swagger
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
-
-    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
-
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'com.mysql:mysql-connector-j'
-
-    testCompileOnly 'org.projectlombok:lombok'
-    testAnnotationProcessor 'org.projectlombok:lombok'
+    implementation 'org.springframework.boot:spring-boot-starter'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     // springsecurity - json
@@ -72,10 +49,6 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
     // S3
     implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-aws', version: '2.2.6.RELEASE'
-    // thumbnailator
-    implementation group: 'net.coobird', name: 'thumbnailator', version: '0.4.20'
-    // firebase
-    implementation 'com.google.firebase:firebase-admin:9.2.0'
 
 }
 

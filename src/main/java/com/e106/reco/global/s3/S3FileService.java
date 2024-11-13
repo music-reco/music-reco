@@ -7,7 +7,6 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.e106.reco.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
-import net.coobird.thumbnailator.Thumbnailator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,7 +38,6 @@ public class S3FileService {
 
         try (InputStream inputStream = file.getInputStream();
              ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-            Thumbnailator.createThumbnail(inputStream, bos, ThumbnailSize.WIDTH, ThumbnailSize.HEIGHT);
             byte[] thumbnailBytes = bos.toByteArray();
             // 여기 메타데이터 넣을 때, 리사이징된걸 넣어야지 아니면 오류 뜸
             objectMetadata.setContentLength(thumbnailBytes.length);
