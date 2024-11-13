@@ -1,5 +1,6 @@
 package com.e106.reco.domain.chat.repository;
 
+import com.e106.reco.domain.artist.entity.Artist;
 import com.e106.reco.domain.chat.entity.ChatRoom;
 import com.e106.reco.domain.chat.entity.Room;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,6 +19,9 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long>{
 
     @Query("select cr.artist.seq from ChatRoom cr where cr.room.seq = :roomSeq")
     List<Long> artistSeqFindByRoomSeq(@Param("roomSeq") Long roomSeq);
+
+    @Query("select cr.artist from ChatRoom cr where cr.room.seq = :roomSeq")
+    List<Artist> artistFindByRoomSeq(@Param("roomSeq") Long roomSeq);
 
     @Query("SELECT cr1.room " +
             "FROM ChatRoom cr1 " +
