@@ -17,6 +17,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.time.LocalDateTime;
+
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -37,6 +39,10 @@ public class User extends Artist {
     @Builder.Default
     @Enumerated(EnumType.STRING)
     private UserStatus status = UserStatus.ACTIVE;
+
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     public void modifyPassword(String password) {
         this.password = password;
