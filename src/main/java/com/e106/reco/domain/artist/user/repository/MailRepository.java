@@ -54,7 +54,7 @@ public class MailRepository {
 
     public void createEmailSuccess(String email) {
         stringRedisTemplate.opsForValue()
-                .set(PREFIX_EMAIL_COUNT + email, "success", Duration.ofSeconds(LIMIT_TIME));
+                .set(PREFIX_EMAIL_COUNT + email, "success", Duration.ofSeconds(LIMIT_TIME*5));
     }
     public boolean isEmailValid(String email) {
         return stringRedisTemplate.hasKey(PREFIX_EMAIL_COUNT + email) &&
