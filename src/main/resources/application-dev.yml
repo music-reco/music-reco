@@ -15,3 +15,11 @@ spring:
       host: localhost
       port: 6379
       password:
+
+    neo4j:
+      database: neo4j
+  neo4j:
+    uri: neo4j+s://8295f96d.databases.neo4j.io
+    authentication:
+      username: neo4j
+      password: O2TxuKNhWqOcpfD1mBwtuqDgOjL6lcyN3osgzuUSiTo

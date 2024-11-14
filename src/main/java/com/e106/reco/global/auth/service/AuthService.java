@@ -7,7 +7,15 @@ import com.e106.reco.domain.artist.entity.Region;
 import com.e106.reco.domain.artist.user.dto.CustomUserDetails;
 import com.e106.reco.domain.artist.user.entity.Gender;
 import com.e106.reco.domain.artist.user.entity.User;
+import com.e106.reco.domain.artist.user.node.ArtistNode;
+import com.e106.reco.domain.artist.user.node.GenreNode;
+import com.e106.reco.domain.artist.user.node.InstrumentNode;
+import com.e106.reco.domain.artist.user.node.RegionNode;
+import com.e106.reco.domain.artist.user.repository.GenreRepository;
+import com.e106.reco.domain.artist.user.repository.InstrumentRepository;
 import com.e106.reco.domain.artist.user.repository.MailRepository;
+import com.e106.reco.domain.artist.user.repository.RecommendRepository;
+import com.e106.reco.domain.artist.user.repository.RegionRepository;
 import com.e106.reco.domain.artist.user.repository.UserRepository;
 import com.e106.reco.global.auth.dto.JoinDto;
 import com.e106.reco.global.auth.dto.MailDto;
@@ -56,6 +64,10 @@ public class AuthService implements UserDetailsService, ReactiveUserDetailsServi
     private final JavaMailSender mailSender;
     private final CrewUserRepository crewUserRepository;
     private final S3FileService s3FileService;
+    private final RegionRepository regionRepository;
+    private final InstrumentRepository instrumentRepository;
+    private final RecommendRepository recommendRepository;
+    private final GenreRepository genreRepository;
 
     @Value("${spring.mail.username}")
     private String configEmail;
@@ -96,7 +108,32 @@ public class AuthService implements UserDetailsService, ReactiveUserDetailsServi
         // 회원가입
         User user = User.of(joinDto);
         user.modifyPassword(bCryptPasswordEncoder.encode(joinDto.getPassword()));
-        userRepository.save(user);
+        Long userSeq = userRepository.save(user).getSeq();
+
+
+        // 그래프 시작.
+        RegionNode region = regionRepository.findByName(joinDto.getRegion())
+                .orElseGet(() -> regionRepository.save(RegionNode.builder()
+                                .name(joinDto.getRegion())
+                        .build()));
+
+        // 2. Genre 처리
+        GenreNode genre = genreRepository.findByName(joinDto.getGenre())
+                .orElseGet(() -> genreRepository.save(new GenreNode(null, joinDto.getGenre())));
+
+        // 3. Instrument 처리
+        InstrumentNode instruments = instrumentRepository.findByName(joinDto.getPosition())
+                        .orElseGet(() -> instrumentRepository.save(new InstrumentNode(null, joinDto.getPosition())));
+
+        // 4. Artist 생성 및 관계 설정
+        ArtistNode artist = new ArtistNode();
+        artist.setId(userSeq);
+        artist.setName(joinDto.getName());
+        artist.setRegion(region);
+        artist.setGenres(genre);
+        artist.setInstruments(instruments);
+
+        recommendRepository.save(artist);
         return new CommonResponse("회원가입 완료");
     }
     public CommonResponse sendEmail(MailDto mailDto) {
