@@ -37,13 +37,18 @@ public class WebfluxJwtFilter implements WebFilter {
         String accessToken = request.getHeaders().getFirst("Authorization");
         log.info("filter - Authorization: {}", request.getHeaders().get("Authorization"));
         log.info("filter - accessToken: {}", accessToken);
+        String token = null;
+
         // 토큰이 없다면 다음 필터로 넘김
         if (accessToken == null || !accessToken.startsWith("Bearer ")) {
-            return chain.filter(exchange);
+            token = request.getQueryParams().getFirst("token"); // 쿼리 파라미터로 토큰 받기
+        }else{
+            token = accessToken.split(" ")[1];
         }
 
-        log.info("filter - haveAccessToken");
-        String token = accessToken.split(" ")[1];
+        log.info("filter - haveToken");
+        log.info("filter - accessToken: {}", token);
+
         // 토큰 만료 여부 확인, 만료시 다음 필터로 넘기지 않음
         try {
             jwtUtil.isExpired(token);
