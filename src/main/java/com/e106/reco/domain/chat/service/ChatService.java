@@ -23,8 +23,7 @@ import com.e106.reco.global.error.exception.BusinessException;
 import com.e106.reco.global.util.AuthUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -44,11 +43,11 @@ import static com.e106.reco.global.error.errorcode.ChatErrorCode.ROOM_NOT_FOUND;
 import static com.e106.reco.global.error.errorcode.ChatErrorCode.SINGLE_CHAT_ONLY_ONE_RECEIVER;
 import static com.e106.reco.global.error.errorcode.CrewErrorCode.CREW_USER_NOT_FOUND;
 
-@Service
+@Slf4j
 @RequiredArgsConstructor
+@Service
 @Transactional
 public class ChatService {
-    private static final Logger log = LoggerFactory.getLogger(ChatService.class);
     private final RoomRepository roomRepository;
     private final ArtistRepository artistRepository;
     private final ChatRepository chatRepository;
