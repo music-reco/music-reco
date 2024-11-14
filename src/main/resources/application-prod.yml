@@ -18,4 +18,11 @@ spring:
       port: ${SPRING_REDIS_PORT}
       password: ${SPRING_REDIS_PASSWORD}
     mongodb:
-      uri: mongodb+srv://ADMIN:SSAFY123@reco.mv9rf.mongodb.net/RECO?ssl=true
+      uri: ${SPRING_MONGO_DB_URI}
+
+  neo4j:
+    uri: ${SPRING_GRAPH_DB_URL}
+    authentication:
+      username: ${SPRING_GRAPH_DB_USERNAME}
+      password: ${SPRING_GRAPH_DB_PASSWORD}
+

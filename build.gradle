@@ -42,7 +42,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-webflux'
     // redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
@@ -76,6 +75,10 @@ dependencies {
     implementation group: 'net.coobird', name: 'thumbnailator', version: '0.4.20'
     // firebase
     implementation 'com.google.firebase:firebase-admin:9.2.0'
+
+    // neo4j
+    implementation 'org.springframework.boot:spring-boot-starter-data-neo4j'
+    // implementation 'org.neo4j.driver:neo4j-java-driver:5.26.3'
 
 }
 
