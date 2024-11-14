@@ -32,6 +32,7 @@ public class WebfluxJwtFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        log.info("filter - start");
         ServerHttpRequest request = exchange.getRequest();
         String accessToken = request.getHeaders().getFirst("Authorization");
 
@@ -40,6 +41,7 @@ public class WebfluxJwtFilter implements WebFilter {
             return chain.filter(exchange);
         }
 
+        log.info("filter - haveAccessToken");
         String token = accessToken.split(" ")[1];
         // 토큰 만료 여부 확인, 만료시 다음 필터로 넘기지 않음
         try {
@@ -48,6 +50,7 @@ public class WebfluxJwtFilter implements WebFilter {
             return Mono.error(new BusinessException(TOKEN_EXPIRED));
         }
 
+        log.info("filter - notExpire");
         // 토큰이 access인지 확인 (발급시 페이로드에 명시)
         if (!jwtUtil.getCategory(token).equals("access")) {
             //response body
