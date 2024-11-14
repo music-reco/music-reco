@@ -13,9 +13,10 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             "AND c.seq = :seq")
     Optional<Comment> findBySeq(Long seq);
 
-    @Query("select c from Comment c where c.board.seq = :boardSeq")
+    @Query("select c from Comment c where c.board.seq = :boardSeq And c.state != com.e106.reco.domain.board.entity.CommentState.INACTIVE")
     List<Comment> findByBoard_Seq(Long boardSeq, Pageable pageable);
 
+    @Query("select c from Comment c where c.parent.seq = :parentSeq And c.state != com.e106.reco.domain.board.entity.CommentState.INACTIVE")
     List<Comment> findByParent_seq(Long parentSeq);
 
     int countByBoard_Seq(Long boardSeq);
