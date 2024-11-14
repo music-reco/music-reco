@@ -4,9 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
-import org.springframework.web.cors.reactive.CorsConfigurationSource;
-import org.springframework.web.server.ServerWebExchange;
-import reactor.core.publisher.Mono;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 
@@ -24,13 +22,8 @@ public class CorsConfig {
         config.setExposedHeaders(Arrays.asList("Authorization")); // 노출할 헤더 설정
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")); // 허용할 HTTP 메서드
 
-        // ReactiveCorsConfigurationSource 구현
-        CorsConfigurationSource source = new CorsConfigurationSource() {
-            @Override
-            public CorsConfiguration getCorsConfiguration(ServerWebExchange exchange) {
-                return Mono.just(config).block(); // CORS 설정을 Mono로 반환
-            }
-        };
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
 
         return new CorsWebFilter(source);  // WebFlux에서 사용할 CorsWebFilter 반환
     }
