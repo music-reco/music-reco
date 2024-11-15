@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -66,10 +65,9 @@ public class ChatController {
 //    public Flux<Chat> getArtists(@PathVariable("roomSeq")String groupSeq) {
 //        return chatService.findByPk(groupSeq);
 //    }
-
     @GetMapping(value = "/webflux/{roomSeq}/{artistSeq}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<Chat> getMsg(@PathVariable("artistSeq")Long artistSeq, @PathVariable("roomSeq")String roomSeq) {
-        return chatRepository.mFindByRoomSeq(roomSeq).subscribeOn(Schedulers.boundedElastic());
+    public Flux<Chat> getMsg(@PathVariable("artistSeq")Long artistSeq, @PathVariable("roomSeq")Long roomSeq) {
+        return chatService.getMsg(artistSeq, roomSeq);
     }
 
     @GetMapping(value = "/webflux/{artistSeq}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)

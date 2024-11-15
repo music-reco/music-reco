@@ -16,6 +16,7 @@ import com.e106.reco.domain.chat.entity.ChatRoom;
 import com.e106.reco.domain.chat.entity.Room;
 import com.e106.reco.domain.chat.entity.RoomState;
 import com.e106.reco.domain.chat.repository.ChatArtistRedisRepository;
+import com.e106.reco.domain.chat.repository.ChatArtistStateRepository;
 import com.e106.reco.domain.chat.repository.ChatRepository;
 import com.e106.reco.domain.chat.repository.ChatRoomRepository;
 import com.e106.reco.domain.chat.repository.RoomRepository;
@@ -31,6 +32,7 @@ import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -54,12 +56,19 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final CrewUserRepository crewUserRepository;
     private final ChatArtistRedisRepository chatArtistRedisRepository;
+    private final ChatArtistStateRepository chatArtistStateRepository;
 
-//    public Flux<Chat> getMsg(Long artistSeq, String roomSeq){
-//        chatArtistRepository.c
-//        return chatRepository.mFindByGroupSeqAfterJoin(roomSeq, )
-//            .subscribeOn(Schedulers.boundedElastic());
-//    }
+    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
+
+    public Flux<Chat> getMsg(Long artistSeq, Long roomSeq){
+        Artist artist = artistRepository.findBySeq(artistSeq).orElseThrow(()-> new BusinessException(ARTIST_NOT_FOUND));
+        AuthUtil.getWebfluxCustomUserDetails()
+                .subscribe(user -> artistCertification(user.getSeq(), artist));
+        String joinTime = chatArtistStateRepository.getJoinChatUserState(artistSeq, roomSeq);
+        log.info("joinTime: {}", joinTime);
+        return chatRepository.mFindByGroupSeqAfterJoin(roomSeq.toString(), LocalDateTime.parse(joinTime, formatter))
+            .subscribeOn(Schedulers.boundedElastic());
+    }
 
 //    public Flux<List<ChatArtist>> getArtistInfo(String roomSeq) {
 //        return chatRoomRepository.artistSeqFindByRoomSeq(Long.parseLong(roomSeq)) // roomSeq에 해당하는 artistSeq 리스트 조회

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,6 +32,9 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long>{
 
     @Query("select cr.artist from ChatRoom cr where cr.room.seq = :roomSeq AND cr.state != com.e106.reco.domain.chat.entity.RoomState.INACTIVE")
     List<Artist> findExistNameRoomsByRoomSeq(@Param("roomSeq") Long roomSeq);
+
+    @Query("select cr.joinAt from ChatRoom cr where cr.pk = :pk")
+    Optional<LocalDateTime> findJoinTimeByPk(@Param("pk") ChatRoom.PK pk);
 
     @Query("SELECT cr1.room " +
             "FROM ChatRoom cr1 " +
