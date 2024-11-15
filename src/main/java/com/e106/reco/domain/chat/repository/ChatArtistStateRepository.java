@@ -43,8 +43,6 @@ public class ChatArtistStateRepository {
                 ,Duration.ofSeconds(LIMIT_TIME));
     }
 
-
-
     public String getJoinChatUserState(Long artistSeq, Long roomSeq) {
         if (joinRepository.hasKey(PREFIX_ARTIST + artistSeq + PREFIX_ROOM + roomSeq).equals(Boolean.FALSE)) {
             createJoinChatUserState(artistSeq, roomSeq);

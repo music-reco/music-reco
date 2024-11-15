@@ -164,6 +164,7 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
                                         .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(artistSeq).build())
                         .build());
         chatRoom.joinChatRoom();
+        chatArtistStateRepository.createJoinChatUserState(artistSeq, roomSeq);
         chatRoomRepository.save(chatRoom);
     }
     public Mono<Chat> sendMsg(Chat chat){
