@@ -18,6 +18,8 @@ public class ArtistNode {
     @GeneratedValue
     private Long id;
 
+    private Long artistSeq;
+
     private String name;
 
     @Relationship(type = "PLAYS_GENRE", direction = Relationship.Direction.OUTGOING)

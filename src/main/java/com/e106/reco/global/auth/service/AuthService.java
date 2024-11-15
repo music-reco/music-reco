@@ -127,7 +127,8 @@ public class AuthService implements UserDetailsService, ReactiveUserDetailsServi
 
         // 4. Artist 생성 및 관계 설정
         ArtistNode artist = new ArtistNode();
-        artist.setId(userSeq);
+//        artist.setId(userSeq);
+        artist.setArtistSeq(userSeq);
         artist.setName(joinDto.getName());
         artist.setRegion(region);
         artist.setGenres(genre);
