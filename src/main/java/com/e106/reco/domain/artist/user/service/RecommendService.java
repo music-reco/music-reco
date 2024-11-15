@@ -27,7 +27,7 @@ public class RecommendService {
         log.info("artistSeq : {}",artistSeq);
         log.info("recommendations : {}",recommendations);
         recommendations.forEach(recommendation -> {
-            recommendation.setRecommendationReason(generateRecommendationReason());
+//            recommendation.getMatchDetails()
             log.info("recommendation : {}",recommendation);
         });
         return recommendations;
