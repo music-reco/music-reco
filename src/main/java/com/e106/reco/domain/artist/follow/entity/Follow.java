@@ -36,7 +36,7 @@ public class Follow {
 
 	@MapsId("targetSeq")
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "fan_seq")
+	@JoinColumn(name = "target_seq")
 	private Artist targetUser;   // 팔로우를 요청한 USER
 
 	@MapsId("fanSeq")
