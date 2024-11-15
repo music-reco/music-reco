@@ -182,22 +182,38 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
                         .orElseThrow(()-> new BusinessException(ARTIST_NOT_FOUND));
 
         Room room = chatRoomRepository.findPersonalChatRoomBetweenArtists(roomRequest.getSenderSeq(), roomRequest.getReceiversSeq().getFirst())
-                .orElse(roomRepository.save(Room.builder().build()));
+                .orElse(room = roomRepository.save(Room.builder().build()));
 
-        chatRoomRepository.save(ChatRoom.builder()
+        LocalDateTime now = LocalDateTime.now();
+        ChatRoom senderRoom = chatRoomRepository.findByPk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(sender.getSeq()).build())
+                .orElse(chatRoomRepository.save(ChatRoom.builder()
                         .artist(sender)
                         .room(room)
-                        .joinAt(LocalDateTime.now())
+                        .joinAt(now)
                         .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(sender.getSeq()).build())
                         .state(RoomState.PERSONAL)
-                        .build());
-        chatRoomRepository.save(ChatRoom.builder()
-                        .artist(receiver)
+                        .build())
+                );
+        if(senderRoom.getJoinAt().equals(null)) {
+            chatArtistStateRepository.createJoinChatUserState(sender.getSeq(), room.getSeq());
+            senderRoom.joinChatRoom();
+        }
+
+        ChatRoom receiverRoom = chatRoomRepository.findByPk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(receiver.getSeq()).build())
+                .orElse(chatRoomRepository.save(ChatRoom.builder()
+                        .artist(sender)
                         .room(room)
-                        .joinAt(LocalDateTime.now())
+                        .joinAt(now)
                         .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(receiver.getSeq()).build())
                         .state(RoomState.PERSONAL)
-                        .build());
+                        .build())
+                );
+
+        if(receiverRoom.getJoinAt().equals(null)) {
+            chatArtistStateRepository.createJoinChatUserState(receiver.getSeq(), room.getSeq());
+            receiverRoom.joinChatRoom();
+        }
+
         return room.getSeq();
     }
     public Long createGroupChatRoom(RoomRequest roomRequest){
