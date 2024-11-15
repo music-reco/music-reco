@@ -26,11 +26,9 @@ import com.e106.reco.global.util.AuthUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.bson.Document;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
-import org.springframework.data.mongodb.core.messaging.ChangeStreamRequest;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Service;
-import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -48,6 +46,7 @@ import static com.e106.reco.global.error.errorcode.ChatErrorCode.CHAT_NOT_ALLOW_
 import static com.e106.reco.global.error.errorcode.ChatErrorCode.ROOM_NOT_FOUND;
 import static com.e106.reco.global.error.errorcode.ChatErrorCode.SINGLE_CHAT_ONLY_ONE_RECEIVER;
 import static com.e106.reco.global.error.errorcode.CrewErrorCode.CREW_USER_NOT_FOUND;
+import static org.springframework.data.mongodb.core.query.Criteria.where;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -62,20 +61,21 @@ public class ChatService {
     private final ChatArtistRedisRepository chatArtistRedisRepository;
     private final ChatArtistStateRepository chatArtistStateRepository;
     private final ChatArtistMongoRepository chatArtistMongoRepository;
-
-
     private final ReactiveMongoTemplate mongoTemplate;
 
-    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
+    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
 
     public Flux<Chat> getMsg(Long artistSeq, Long roomSeq){
         Artist artist = artistRepository.findBySeq(artistSeq).orElseThrow(()-> new BusinessException(ARTIST_NOT_FOUND));
         AuthUtil.getWebfluxCustomUserDetails()
                 .subscribe(user -> artistCertification(user.getSeq(), artist));
-        String joinTime = chatArtistStateRepository.getJoinChatUserState(artistSeq, roomSeq);
-        log.info("joinTime: {}", joinTime);
-        return chatRepository.mFindByGroupSeqAfterJoin(roomSeq.toString(), LocalDateTime.parse(joinTime, formatter))
-            .subscribeOn(Schedulers.boundedElastic());
+
+        return (Flux<Chat>) chatArtistStateRepository.getJoinChatUserState(artistSeq, roomSeq).subscribe(
+                chatArtist -> chatRepository.mFindByGroupSeqAfterJoin(roomSeq.toString(), LocalDateTime.parse(chatArtist.getJoinAt(), formatter))
+                        .subscribeOn(Schedulers.boundedElastic())
+        );
+
+
     }
 
 //    public Flux<List<ChatArtist>> getArtistInfo(String roomSeq) {
@@ -247,47 +247,31 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
         return room.getSeq();
     }
     public Flux<ChatArtist> getArtistInfo(Long roomSeq) {
-        // 1. 초기 유저 정보 조회 (MongoDB에서 roomSeq와 artistSeq에 해당하는 데이터 가져오기)
-        List<Artist> artistList = chatRoomRepository.artistFindByRoomSeq(roomSeq);
-        Flux<ChatArtist> initialData = Flux.fromIterable(artistList)
-                .map(artist -> ChatArtist.builder()
-                        .artistSeq(artist.getSeq().toString())
-                        .profilePicUrl(artist.getProfileImage())
-                        .nickname(artist.getNickname())
-                        .build()
-                );
+        // 필터링 조건: 특정 roomSeq에 해당하는 ChatArtist 변경사항만
+        Criteria criteria = where("roomSeq").is(roomSeq);
 
-        // 2. Change Stream을 사용하여 실시간 변경 사항 구독
-        String filter = "{ 'operationType': { '$in': ['insert', 'update', 'replace'] }, 'artistSeq': ?0 }";
+        // 먼저, 해당 roomSeq에 대한 모든 ChatArtist를 반환
+        Flux<ChatArtist> chatArtists = Flux.fromIterable(chatRoomRepository.artistFindByRoomSeq(roomSeq)
+                .stream().map(artist -> ChatArtist.of(artist)).toList());
 
-        ChangeStreamRequest.ChangeStreamRequestOptions options = ChangeStreamRequest.builder()
-                .collection("chat_artist")
-                .filter(Document.parse(filter))
-                .build()
-                .getRequestOptions();
 
-        // 3. Flux 생성 (초기 데이터 + 실시간 변경 사항)
-        Flux<ChatArtist> changeStreamFlux = Flux.create(sink -> {
-            Disposable disposable = mongoTemplate.changeStream(options.getChangeStreamOptions(), ChatArtist.class)
-                    .doOnNext(message -> {
-                        ChatArtist updatedArtist = message.getBody();
-                        if (updatedArtist != null) {
-                            sink.next(updatedArtist); // 변경된 데이터 전달
+        // Change Stream을 활용해 변경사항 스트리밍
+        Flux<ChatArtist> changeStream = Flux.create(sink -> {
+            mongoTemplate.changeStream(ChatArtist.class)
+                    .filter(criteria)  // roomSeq 필터
+                    .listen()  // ChangeStream을 통해 변화 감지
+                    .doOnTerminate(sink::complete)  // 종료 시 처리
+                    .subscribe(changeStreamEvent -> {
+                        // ChangeStreamEvent에서 getBody()를 사용하여 실제 변경된 ChatArtist 객체를 가져옵니다.
+                        ChatArtist updatedChatArtist = changeStreamEvent.getBody();
+                        if (updatedChatArtist != null) {
+                            sink.next(updatedChatArtist);  // 변경된 ChatArtist 객체를 반환
                         }
-                    })
-                    .doOnError(sink::error)
-                    .subscribe();
-
-            // 구독 종료 시 구독 취소
-            sink.onDispose(() -> {
-                if (disposable != null && !disposable.isDisposed()) {
-                    disposable.dispose();
-                }
-            });
+                    });
         });
 
-        // 4. 초기 데이터와 실시간 데이터를 결합하여 반환
-        return Flux.concat(initialData, changeStreamFlux); // 초기 데이터 + 실시간 변경 사항
+        // initialData와 changeStream을 합쳐서 반환
+        return chatArtists.concatWith(changeStream);
     }
 
 

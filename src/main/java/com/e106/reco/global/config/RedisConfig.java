@@ -1,7 +1,6 @@
 package com.e106.reco.global.config;
 
 import com.e106.reco.domain.chat.entity.ChatArtist;
-import com.e106.reco.domain.chat.entity.ChatArtistState;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -83,22 +82,22 @@ public class RedisConfig {
         return new ReactiveRedisTemplate<>(rrcf, context);
     }
 
-    @Bean
-    public ReactiveRedisTemplate<String, ChatArtistState> artistStateRedisTemplate() {
-        ReactiveRedisConnectionFactory rrcf = reactiveRedisConnectionFactory();
-
-        Jackson2JsonRedisSerializer<ChatArtistState> serializer =
-                new Jackson2JsonRedisSerializer<>(ChatArtistState.class);
-
-        // String 타입에는 StringRedisSerializer 사용
-        RedisSerializationContext.RedisSerializationContextBuilder<String, ChatArtistState> builder =
-                RedisSerializationContext.newSerializationContext(new StringRedisSerializer());
-
-        RedisSerializationContext<String, ChatArtistState> context = builder
-                .value(serializer)  // ChatArtist 객체 직렬화 설정
-                .hashValue(serializer)
-                .hashKey(new StringRedisSerializer())  // key는 String으로 설정
-                .build();
-        return new ReactiveRedisTemplate<>(rrcf, context);
-    }
+//    @Bean
+//    public ReactiveRedisTemplate<String, ChatArtistState> artistStateRedisTemplate() {
+//        ReactiveRedisConnectionFactory rrcf = reactiveRedisConnectionFactory();
+//
+//        Jackson2JsonRedisSerializer<ChatArtistState> serializer =
+//                new Jackson2JsonRedisSerializer<>(ChatArtistState.class);
+//
+//        // String 타입에는 StringRedisSerializer 사용
+//        RedisSerializationContext.RedisSerializationContextBuilder<String, ChatArtistState> builder =
+//                RedisSerializationContext.newSerializationContext(new StringRedisSerializer());
+//
+//        RedisSerializationContext<String, ChatArtistState> context = builder
+//                .value(serializer)  // ChatArtist 객체 직렬화 설정
+//                .hashValue(serializer)
+//                .hashKey(new StringRedisSerializer())  // key는 String으로 설정
+//                .build();
+//        return new ReactiveRedisTemplate<>(rrcf, context);
+//    }
 }

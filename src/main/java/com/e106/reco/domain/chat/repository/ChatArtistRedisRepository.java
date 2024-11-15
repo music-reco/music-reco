@@ -21,13 +21,13 @@ public class ChatArtistRedisRepository {
     private final ReactiveRedisTemplate<String, ChatArtist> chatArtistRedisTemplate;
     private final ChatArtistMongoRepository chatArtistMongoRepository;
 
-    public Mono<ChatArtist> getChatUser(Artist artist) {
+    public Mono<ChatArtist> getChatUser(Artist artist, Long roomSeq) {
         String redisKey = PREFIX_CHAT + artist.getSeq();
 
         // Redis에서 데이터 조회 후 없으면 MongoDB에서 조회하여 Redis에 캐싱
         return chatArtistRedisTemplate.opsForValue()
                 .get(redisKey)
-                .switchIfEmpty(chatArtistMongoRepository.findByArtistSeq(artist.getSeq().toString())
+                .switchIfEmpty(chatArtistMongoRepository.findByArtistSeq(artist.getSeq().toString(), roomSeq.toString())
                         .switchIfEmpty(
                                 Mono.defer(()-> {
                                             ChatArtist chatArtist = ChatArtist.of(artist);

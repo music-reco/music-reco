@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 
 public interface ChatArtistMongoRepository extends ReactiveMongoRepository<ChatArtist, String> {
 
-    @Query("{ 'artistSeq': ?0 }")
+    @Query("{ 'artistSeq': ?0 , 'roomSeq' : ?1}")
     @Tailable
-    Mono<ChatArtist> findByArtistSeq(String artistSeq);
+    Mono<ChatArtist> findByArtistSeq(String artistSeq, String roomSeq);
 }
