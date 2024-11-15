@@ -15,6 +15,7 @@ import com.e106.reco.domain.chat.entity.ChatArtist;
 import com.e106.reco.domain.chat.entity.ChatRoom;
 import com.e106.reco.domain.chat.entity.Room;
 import com.e106.reco.domain.chat.entity.RoomState;
+import com.e106.reco.domain.chat.repository.ChatArtistMongoRepository;
 import com.e106.reco.domain.chat.repository.ChatArtistRedisRepository;
 import com.e106.reco.domain.chat.repository.ChatArtistStateRepository;
 import com.e106.reco.domain.chat.repository.ChatRepository;
@@ -25,12 +26,15 @@ import com.e106.reco.global.util.AuthUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.Document;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import org.springframework.data.mongodb.core.messaging.ChangeStreamRequest;
 import org.springframework.stereotype.Service;
+import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -57,6 +61,10 @@ public class ChatService {
     private final CrewUserRepository crewUserRepository;
     private final ChatArtistRedisRepository chatArtistRedisRepository;
     private final ChatArtistStateRepository chatArtistStateRepository;
+    private final ChatArtistMongoRepository chatArtistMongoRepository;
+
+
+    private final ReactiveMongoTemplate mongoTemplate;
 
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
 
@@ -110,17 +118,17 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
 }
 
 
-    public Flux<ChatArtist> getArtistInfo(Long roomSeq) {
-        // roomSeq에 해당하는 artistSeq 리스트 조회
-        List<Artist> artistList = chatRoomRepository.artistFindByRoomSeq(roomSeq);
-
-        // 각 artistSeq에 대해 Redis에서 ChatArtist 조회
-        return Flux.fromIterable(artistList) // List<Long>을 Flux<Long>으로 변환
-                .flatMap(chatArtistRedisRepository::getChatUser)
-                .repeatWhen(artistUpdates -> artistUpdates.delayElements(Duration.ofSeconds(5))) // 5초마다 반복
-                .distinctUntilChanged()
-                .subscribeOn(Schedulers.boundedElastic());
-    }
+//    public Flux<ChatArtist> getArtistInfo(Long roomSeq) {
+//        // roomSeq에 해당하는 artistSeq 리스트 조회
+//        List<Artist> artistList = chatRoomRepository.artistFindByRoomSeq(roomSeq);
+//
+//        // 각 artistSeq에 대해 Redis에서 ChatArtist 조회
+//        return Flux.fromIterable(artistList) // List<Long>을 Flux<Long>으로 변환
+//                .flatMap(chatArtistRedisRepository::getChatUser)
+//                .repeatWhen(artistUpdates -> artistUpdates.delayElements(Duration.ofSeconds(5))) // 5초마다 반복
+//                .distinctUntilChanged()
+//                .subscribeOn(Schedulers.boundedElastic());
+//    }
 
 
     public void leave(Long roomSeq, Long artistSeq) {
@@ -238,6 +246,51 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
         chatRoomRepository.saveAll(chatRooms);
         return room.getSeq();
     }
+    public Flux<ChatArtist> getArtistInfo(Long roomSeq) {
+        // 1. 초기 유저 정보 조회 (MongoDB에서 roomSeq와 artistSeq에 해당하는 데이터 가져오기)
+        List<Artist> artistList = chatRoomRepository.artistFindByRoomSeq(roomSeq);
+        Flux<ChatArtist> initialData = Flux.fromIterable(artistList)
+                .map(artist -> ChatArtist.builder()
+                        .artistSeq(artist.getSeq().toString())
+                        .profilePicUrl(artist.getProfileImage())
+                        .nickname(artist.getNickname())
+                        .build()
+                );
+
+        // 2. Change Stream을 사용하여 실시간 변경 사항 구독
+        String filter = "{ 'operationType': { '$in': ['insert', 'update', 'replace'] }, 'artistSeq': ?0 }";
+
+        ChangeStreamRequest.ChangeStreamRequestOptions options = ChangeStreamRequest.builder()
+                .collection("chat_artist")
+                .filter(Document.parse(filter))
+                .build()
+                .getRequestOptions();
+
+        // 3. Flux 생성 (초기 데이터 + 실시간 변경 사항)
+        Flux<ChatArtist> changeStreamFlux = Flux.create(sink -> {
+            Disposable disposable = mongoTemplate.changeStream(options.getChangeStreamOptions(), ChatArtist.class)
+                    .doOnNext(message -> {
+                        ChatArtist updatedArtist = message.getBody();
+                        if (updatedArtist != null) {
+                            sink.next(updatedArtist); // 변경된 데이터 전달
+                        }
+                    })
+                    .doOnError(sink::error)
+                    .subscribe();
+
+            // 구독 종료 시 구독 취소
+            sink.onDispose(() -> {
+                if (disposable != null && !disposable.isDisposed()) {
+                    disposable.dispose();
+                }
+            });
+        });
+
+        // 4. 초기 데이터와 실시간 데이터를 결합하여 반환
+        return Flux.concat(initialData, changeStreamFlux); // 초기 데이터 + 실시간 변경 사항
+    }
+
+
 
     private void artistCertification(Long userSeq, Artist artist) {
         if( artist.getPosition() == Position.CREW ) {
