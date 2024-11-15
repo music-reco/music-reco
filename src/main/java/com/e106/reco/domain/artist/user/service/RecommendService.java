@@ -7,7 +7,6 @@ import com.e106.reco.domain.artist.user.dto.node.InitialRecommendationProjection
 import com.e106.reco.domain.artist.user.repository.RecommendRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,7 +16,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class RecommendService {
     private final RecommendRepository recommendRepository;
 
