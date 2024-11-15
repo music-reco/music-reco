@@ -184,13 +184,10 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
         Room room = chatRoomRepository.findPersonalChatRoomBetweenArtists(roomRequest.getSenderSeq(), roomRequest.getReceiversSeq().getFirst())
                 .orElse(roomRepository.save(Room.builder().build()));
 
-        LocalDateTime now = LocalDateTime.now();
-
         ChatRoom senderRoom = chatRoomRepository.findByPk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(sender.getSeq()).build())
                 .orElse(chatRoomRepository.save(ChatRoom.builder()
                         .artist(sender)
                         .room(room)
-                        .joinAt(now)
                         .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(sender.getSeq()).build())
                         .state(RoomState.PERSONAL)
                         .build())
@@ -198,13 +195,14 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
         if(senderRoom.getJoinAt().equals(null)) {
             senderRoom.joinChatRoom();
             chatArtistStateRepository.createJoinChatUserState(sender.getSeq(), room.getSeq());
+        }else{
+            log.info("roomTime 있음 {}", senderRoom.getJoinAt());
         }
 
         ChatRoom receiverRoom = chatRoomRepository.findByPk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(receiver.getSeq()).build())
                 .orElse(chatRoomRepository.save(ChatRoom.builder()
                         .artist(receiver)
                         .room(room)
-                        .joinAt(now)
                         .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(receiver.getSeq()).build())
                         .state(RoomState.PERSONAL)
                         .build())
@@ -213,6 +211,8 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
         if(receiverRoom.getJoinAt().equals(null)) {
             receiverRoom.joinChatRoom();
             chatArtistStateRepository.createJoinChatUserState(receiver.getSeq(), room.getSeq());
+        }else{
+            log.info("roomTime 있음", senderRoom.getJoinAt());
         }
 
         return room.getSeq();
