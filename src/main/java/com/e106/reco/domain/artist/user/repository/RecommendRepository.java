@@ -68,16 +68,14 @@ public interface RecommendRepository extends Neo4jRepository<ArtistNode, Long> {
 
     @Query("""
         // 1. 현재 아티스트의 정보 가져오기
-//        MATCH (me:Artist {id: $artistName})
         MATCH (me:Artist {id: $artistSeq})
         MATCH (me)-[:PLAYS_GENRE]->(myGenre:Genre)
         MATCH (me)-[:PLAYS_INSTRUMENT]->(myInstrument:Instrument)
         MATCH (me)-[:BASED_IN]->(myRegion:Region)
         
         // 2. 다른 아티스트 찾기 (자신 제외)
-//        MATCH (other:Artist)
-//        WHERE other <> me
-//        AND NOT (me)-[:FOLLOWS]->(other)
+        MATCH (other:Artist)
+        WHERE other <> me
         
         // 3. 지역 매칭 (3점)
         OPTIONAL MATCH (other)-[:BASED_IN]->(otherRegion:Region)
