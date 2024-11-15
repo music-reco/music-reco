@@ -75,33 +75,32 @@ public interface RecommendRepository extends Neo4jRepository<ArtistNode, Long> {
     MATCH (me)-[:BASED_IN]->(myRegion:Region)
     
     // 2. 다른 아티스트 찾기 (자신 제외)
+    WITH me, myGenre, myInstrument, myRegion
     MATCH (other:Artist)
     WHERE other <> me
     
     // 3. 지역 매칭 (3점)
     OPTIONAL MATCH (other)-[:BASED_IN]->(otherRegion:Region)
     WHERE otherRegion = myRegion
-    WITH me, other, myGenre, myInstrument,
+    WITH me, other, myGenre, myInstrument, otherRegion,
          CASE WHEN otherRegion IS NOT NULL THEN 3.0 ELSE 0.0 END as regionScore
     
     // 4. 장르 매칭 (2점)
     OPTIONAL MATCH (other)-[:PLAYS_GENRE]->(otherGenre:Genre)
     WHERE otherGenre = myGenre
-    WITH me, other, myInstrument, regionScore,
+    WITH me, other, myInstrument, regionScore, otherGenre,
          CASE WHEN count(otherGenre) > 0 THEN 2.0 ELSE 0.0 END as genreScore,
          collect(DISTINCT otherGenre.name) as matchedGenres
     
     // 5. 악기 매칭 (1점)
     OPTIONAL MATCH (other)-[:PLAYS_INSTRUMENT]->(otherInstrument:Instrument)
     WHERE otherInstrument = myInstrument
-    WITH other, regionScore, genreScore, matchedGenres,
+    WITH other, regionScore, genreScore, matchedGenres, otherInstrument,
          CASE WHEN count(otherInstrument) > 0 THEN 1.0 ELSE 0.0 END as instrumentScore,
          collect(DISTINCT otherInstrument.name) as matchedInstruments
     
-    // 6. 매칭된 정보 수집
+    // 6. 매칭된 정보 수집 및 최종 점수 계산
     MATCH (other)-[:BASED_IN]->(otherRegion:Region)
-    
-    // 7. 최종 점수 계산 및 결과 반환
     WITH other,
          regionScore + genreScore + instrumentScore as totalScore,
          matchedGenres,
@@ -109,6 +108,7 @@ public interface RecommendRepository extends Neo4jRepository<ArtistNode, Long> {
          otherRegion.name as region
     WHERE totalScore > 0
     
+    // 7. 결과 반환
     RETURN other.name as artistName,
            totalScore as similarityScore,
            matchedGenres as sharedGenres,
