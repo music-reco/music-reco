@@ -37,6 +37,7 @@ public class ChatArtistStateRepository {
 //    }
 
     public void createJoinChatUserState(Long artistSeq, Long roomSeq) {
+        log.info("redis update");
         joinRepository.opsForValue().set(PREFIX_ARTIST + artistSeq + PREFIX_ROOM + roomSeq
                 , String.valueOf(chatRoomRepository.findJoinTimeByPk(ChatRoom.PK.builder().roomSeq(roomSeq).artistSeq(artistSeq).build())
                         .orElseThrow(()-> new BusinessException(ROOM_NOT_FOUND)))

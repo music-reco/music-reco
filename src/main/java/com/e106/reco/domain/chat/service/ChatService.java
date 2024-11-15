@@ -182,9 +182,10 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
                         .orElseThrow(()-> new BusinessException(ARTIST_NOT_FOUND));
 
         Room room = chatRoomRepository.findPersonalChatRoomBetweenArtists(roomRequest.getSenderSeq(), roomRequest.getReceiversSeq().getFirst())
-                .orElse(room = roomRepository.save(Room.builder().build()));
+                .orElse(roomRepository.save(Room.builder().build()));
 
         LocalDateTime now = LocalDateTime.now();
+
         ChatRoom senderRoom = chatRoomRepository.findByPk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(sender.getSeq()).build())
                 .orElse(chatRoomRepository.save(ChatRoom.builder()
                         .artist(sender)
