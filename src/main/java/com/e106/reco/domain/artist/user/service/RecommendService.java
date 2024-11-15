@@ -37,7 +37,7 @@ public class RecommendService {
     }
     private InitialRecommendationDTO convertToInitDTO(InitialRecommendationProjection projection) {
         return InitialRecommendationDTO.builder()
-                .artistName(projection.getArtistName())
+                .artistName(projection.getName())
                 .similarity(normalizeSimilarityScore(projection.getSimilarityScore()))
                 .recommendationReason(generateRecommendationReason(projection))
                 .matchDetails(generateMatchDetails(projection))
