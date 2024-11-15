@@ -5,13 +5,12 @@ import com.e106.reco.domain.artist.crew.entity.CrewUserState;
 import com.e106.reco.domain.artist.crew.repository.CrewUserRepository;
 import com.e106.reco.domain.artist.entity.Artist;
 import com.e106.reco.domain.artist.entity.Position;
-import com.e106.reco.domain.artist.user.dto.CustomUserDetails;
 import com.e106.reco.domain.artist.repository.ArtistRepository;
+import com.e106.reco.domain.artist.user.dto.CustomUserDetails;
 import com.e106.reco.domain.chat.dto.ChatRoomResponse;
 import com.e106.reco.domain.chat.dto.RoomRequest;
 import com.e106.reco.domain.chat.dto.RoomResponse;
 import com.e106.reco.domain.chat.entity.Chat;
-import com.e106.reco.domain.chat.entity.ChatArtist;
 import com.e106.reco.domain.chat.entity.ChatRoom;
 import com.e106.reco.domain.chat.entity.Room;
 import com.e106.reco.domain.chat.entity.RoomState;
@@ -29,9 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -104,17 +101,17 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
 }
 
 
-    public Flux<ChatArtist> getArtistInfo(Long roomSeq) {
-        // roomSeq에 해당하는 artistSeq 리스트 조회
-        List<Artist> artistList = chatRoomRepository.artistFindByRoomSeq(roomSeq);
-
-        // 각 artistSeq에 대해 Redis에서 ChatArtist 조회
-        return Flux.fromIterable(artistList) // List<Long>을 Flux<Long>으로 변환
-                .flatMap(chatArtistRedisRepository::getChatUser)
-                .repeatWhen(artistUpdates -> artistUpdates.delayElements(Duration.ofSeconds(5))) // 5초마다 반복
-                .distinctUntilChanged()
-                .subscribeOn(Schedulers.boundedElastic());
-    }
+//    public Flux<ChatArtist> getArtistInfo(Long roomSeq) {
+//        // roomSeq에 해당하는 artistSeq 리스트 조회
+//        List<Artist> artistList = chatRoomRepository.artistFindByRoomSeq(roomSeq);
+//
+//        // 각 artistSeq에 대해 Redis에서 ChatArtist 조회
+//        return Flux.fromIterable(artistList) // List<Long>을 Flux<Long>으로 변환
+//                .flatMap(artist -> chatArtistRedisRepository.getChatUser(artist, ))
+//                .repeatWhen(artistUpdates -> artistUpdates.delayElements(Duration.ofSeconds(5))) // 5초마다 반복
+//                .distinctUntilChanged()
+//                .subscribeOn(Schedulers.boundedElastic());
+//    }
 
 
     public void leave(Long roomSeq, Long artistSeq) {
@@ -196,8 +193,6 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
         if(Objects.isNull(senderRoom.getJoinAt())) {
             senderRoom.joinChatRoom();
             chatArtistStateRepository.createJoinChatUserState(sender.getSeq(), room.getSeq());
-        }else{
-            log.info("roomTime 있음 {}", senderRoom.getJoinAt());
         }
 
         ChatRoom receiverRoom = chatRoomRepository.findByPk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(receiver.getSeq()).build())
@@ -212,8 +207,6 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
         if(Objects.isNull(receiverRoom.getJoinAt())) {
             receiverRoom.joinChatRoom();
             chatArtistStateRepository.createJoinChatUserState(receiver.getSeq(), room.getSeq());
-        }else{
-            log.info("roomTime 있음", senderRoom.getJoinAt());
         }
 
         return room.getSeq();

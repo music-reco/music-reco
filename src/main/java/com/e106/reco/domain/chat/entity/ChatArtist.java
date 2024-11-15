@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -20,12 +22,23 @@ public class ChatArtist {
 
     private String nickname;
     private String profilePicUrl;
+    private String joinAt;
+    private String roomSeq;
 
     public static ChatArtist of(Artist artist) {
         return ChatArtist.builder()
                 .artistSeq(artist.getSeq().toString())
                 .profilePicUrl(artist.getProfileImage())
                 .nickname(artist.getNickname())
+                .build();
+    }
+
+    public static ChatArtist of(Artist artist, LocalDateTime joinAt) {
+        return ChatArtist.builder()
+                .artistSeq(artist.getSeq().toString())
+                .profilePicUrl(artist.getProfileImage())
+                .nickname(artist.getNickname())
+                .joinAt(joinAt.toString())
                 .build();
     }
 }
