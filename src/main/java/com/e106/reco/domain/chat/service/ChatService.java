@@ -202,7 +202,7 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
 
         ChatRoom receiverRoom = chatRoomRepository.findByPk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(receiver.getSeq()).build())
                 .orElse(chatRoomRepository.save(ChatRoom.builder()
-                        .artist(sender)
+                        .artist(receiver)
                         .room(room)
                         .joinAt(now)
                         .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(receiver.getSeq()).build())
