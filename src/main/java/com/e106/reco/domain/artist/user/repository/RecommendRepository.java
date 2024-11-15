@@ -17,7 +17,7 @@ import java.util.Optional;
 public interface RecommendRepository extends Neo4jRepository<ArtistNode, Long> {
     @Query("""
     // 1. 내가 팔로우하는 아티스트들 찾기
-    MATCH (me:Artist {id: $artistSeq})-[:FOLLOWS]->(followed:Artist)
+    MATCH (me:Artist {artistSeq: $artistSeq})-[:FOLLOWS]->(followed:Artist)
     
     // 2. 팔로우하는 아티스트들의 장르, 악기, 지역 정보 수집
     MATCH (followed)-[:PLAYS_GENRE]->(g:Genre)
@@ -69,7 +69,7 @@ public interface RecommendRepository extends Neo4jRepository<ArtistNode, Long> {
 
     @Query("""
     // 1. 현재 아티스트의 정보 가져오기
-    MATCH (me:Artist {id: $artistSeq})
+    MATCH (me:Artist {artistSeq: $artistSeq})
     MATCH (me)-[:PLAYS_GENRE]->(myGenre:Genre)
     MATCH (me)-[:PLAYS_INSTRUMENT]->(myInstrument:Instrument)
     MATCH (me)-[:BASED_IN]->(myRegion:Region)
