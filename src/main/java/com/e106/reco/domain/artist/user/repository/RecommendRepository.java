@@ -3,7 +3,7 @@ package com.e106.reco.domain.artist.user.repository;
 import com.e106.reco.domain.artist.user.dto.node.ArtistRecommendation;
 import com.e106.reco.domain.artist.user.dto.node.ArtistRecommendationProjection;
 import com.e106.reco.domain.artist.user.dto.node.GenreStatistics;
-import com.e106.reco.domain.artist.user.dto.node.InitialRecommendationProjection;
+import com.e106.reco.domain.artist.user.dto.node.InitialRecommendationDTO;
 import com.e106.reco.domain.artist.user.node.ArtistNode;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
@@ -88,41 +88,33 @@ public interface RecommendRepository extends Neo4jRepository<ArtistNode, Long> {
     // 4. 장르 매칭 (2점)
     OPTIONAL MATCH (other)-[:PLAYS_GENRE]->(otherGenre:Genre)
     WHERE otherGenre = myGenre
-    WITH me, other, myInstrument, regionScore, otherGenre,
+    WITH me, other, myInstrument, regionScore, otherGenre, otherRegion,
          CASE WHEN count(otherGenre) > 0 THEN 2.0 ELSE 0.0 END as genreScore,
          collect(DISTINCT otherGenre.name) as matchedGenres
 
     // 5. 악기 매칭 (1점)
     OPTIONAL MATCH (other)-[:PLAYS_INSTRUMENT]->(otherInstrument:Instrument)
     WHERE otherInstrument = myInstrument
-    WITH other, regionScore, genreScore, matchedGenres, otherInstrument,
+    WITH other, regionScore, genreScore, matchedGenres, otherInstrument, otherRegion,
          CASE WHEN count(otherInstrument) > 0 THEN 1.0 ELSE 0.0 END as instrumentScore,
          collect(DISTINCT otherInstrument.name) as matchedInstruments
 
-    // 6. 매칭된 정보 수집 및 최종 점수 계산
-    MATCH (other)-[:BASED_IN]->(otherRegion:Region)
-    WITH other,
+    // 6. 최종 점수 계산 및 결과 반환
+    WITH other.name as name,
          regionScore + genreScore + instrumentScore as totalScore,
-         matchedGenres,
-         matchedInstruments,
-         otherRegion.name as region
+         matchedGenres as sharedGenres,
+         matchedInstruments as sharedInstruments,
+         otherRegion.name as artistRegion
     WHERE totalScore > 0
 
-    // 7. 결과 반환
-    RETURN other.name as name,
-           totalScore as similarityScore,
-           matchedGenres as sharedGenres,
-           matchedInstruments as sharedInstruments,
-           region as artistRegion
-    ORDER BY totalScore DESC, other.name
+    RETURN name, totalScore as similarityScore, sharedGenres, sharedInstruments, artistRegion
+    ORDER BY totalScore DESC, name
     LIMIT $limit
     """)
-    List<InitialRecommendationProjection> findInitialRecommendations(
+    List<InitialRecommendationDTO> findInitialRecommendations(
             @Param("artistSeq") Long artistSeq,
             @Param("limit") int limit
     );
-
-
 
 
     @Query("MATCH (a:Artist {name: $artistName}) " +

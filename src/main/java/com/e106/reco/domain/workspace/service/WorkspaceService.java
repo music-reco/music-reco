@@ -71,7 +71,6 @@ public class WorkspaceService {
                                                                MultipartFile file, List<String> stemList, String splitter) {
         Long artistSeq = AuthUtil.getCustomUserDetails().getSeq();
         Workspace workspace = Workspace.of(workspaceRequest, artistSeq);
-
         String contentType = file.getContentType();
         log.info("Original ContentType: {}", contentType);
 

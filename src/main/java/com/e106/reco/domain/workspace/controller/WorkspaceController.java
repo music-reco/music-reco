@@ -50,7 +50,8 @@ public class WorkspaceController {
             @RequestPart(value = "file") MultipartFile file,
             @RequestPart(value = "stemList") List<String> stemList,
             @RequestParam(value = "splitter", defaultValue = "phoenix") String splitter,
-            @RequestParam(value = "fcmToken", required = false) String fcmToken){
+            @RequestParam(value =
+                    "fcmToken", required = false) String fcmToken){
         log.info("변환시작합니다.");
         log.info("file = {}", file.getOriginalFilename());
         log.info("file = {}", file.getContentType());

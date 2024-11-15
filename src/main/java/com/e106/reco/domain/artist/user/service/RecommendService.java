@@ -6,6 +6,7 @@ import com.e106.reco.domain.artist.user.dto.node.InitialRecommendationDTO;
 import com.e106.reco.domain.artist.user.dto.node.InitialRecommendationProjection;
 import com.e106.reco.domain.artist.user.repository.RecommendRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -16,16 +17,20 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RecommendService {
     private final RecommendRepository recommendRepository;
 
     public List<InitialRecommendationDTO> getInitialRecommendations(Long artistSeq, int limit) {
-        List<InitialRecommendationProjection> recommendations =
+        List<InitialRecommendationDTO> recommendations =
                 recommendRepository.findInitialRecommendations(artistSeq, limit);
-
-        return recommendations.stream()
-                .map(this::convertToInitDTO)
-                .collect(Collectors.toList());
+        log.info("artistSeq : {}",artistSeq);
+        log.info("recommendations : {}",recommendations);
+        recommendations.forEach(recommendation -> {
+            recommendation.setRecommendationReason(generateRecommendationReason());
+            log.info("recommendation : {}",recommendation);
+        });
+        return recommendations;
     }
     public List<ArtistRecommendationDTO> getRecommendations(Long artistSeq, int limit) {
         List<ArtistRecommendationProjection> recommendations =
@@ -35,14 +40,14 @@ public class RecommendService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
-    private InitialRecommendationDTO convertToInitDTO(InitialRecommendationProjection projection) {
-        return InitialRecommendationDTO.builder()
-                .artistName(projection.getName())
-                .similarity(normalizeSimilarityScore(projection.getSimilarityScore()))
-                .recommendationReason(generateRecommendationReason(projection))
-                .matchDetails(generateMatchDetails(projection))
-                .build();
-    }
+//    private InitialRecommendationDTO convertToInitDTO(InitialRecommendationProjection projection) {
+//        return InitialRecommendationDTO.builder()
+//                .name(projection.getName())
+//                .similarityScore(normalizeSimilarityScore(projection.getSimilarityScore()))
+//                .recommendationReason(generateRecommendationReason(projection))
+//                .matchDetails(generateMatchDetails(projection))
+//                .build();
+//    }
 
 
     private ArtistRecommendationDTO convertToDTO(ArtistRecommendationProjection projection) {
