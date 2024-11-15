@@ -36,6 +36,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import static com.e106.reco.global.error.errorcode.ArtistErrorCode.ARTIST_NOT_FOUND;
 import static com.e106.reco.global.error.errorcode.ChatErrorCode.ARTIST_NOT_IN_CHAT;
@@ -192,7 +193,7 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
                         .state(RoomState.PERSONAL)
                         .build())
                 );
-        if(senderRoom.getJoinAt().equals(null)) {
+        if(Objects.isNull(senderRoom.getJoinAt())) {
             senderRoom.joinChatRoom();
             chatArtistStateRepository.createJoinChatUserState(sender.getSeq(), room.getSeq());
         }else{
@@ -208,7 +209,7 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
                         .build())
                 );
 
-        if(receiverRoom.getJoinAt().equals(null)) {
+        if(Objects.isNull(receiverRoom.getJoinAt())) {
             receiverRoom.joinChatRoom();
             chatArtistStateRepository.createJoinChatUserState(receiver.getSeq(), room.getSeq());
         }else{
