@@ -12,8 +12,9 @@ import lombok.RequiredArgsConstructor;
 @Builder
 public class ChatRoomResponse {
     String nickname;
+    Long ArtistSeq;
 
     public static ChatRoomResponse of(Artist artist){
-        return ChatRoomResponse.builder().nickname(artist.getNickname()).build();
+        return ChatRoomResponse.builder().nickname(artist.getNickname()).ArtistSeq(artist.getSeq()).build();
     }
 }

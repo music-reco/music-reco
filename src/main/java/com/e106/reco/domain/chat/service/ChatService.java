@@ -91,6 +91,7 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
                             .lastMsgTime(lastChat != null ? lastChat.getCreatedAt() : null)
                             .chatRoomResponses(chatRoomRepository.findExistNameRoomsByRoomSeq(room.getSeq())
                                     .stream()
+                                    .filter(chatRoomArtist -> !artistSeq.equals(chatRoomArtist.getSeq()))
                                     .map(ChatRoomResponse::of)
                                     .toList()
                             )
