@@ -6,7 +6,7 @@ import com.e106.reco.domain.artist.crew.repository.CrewUserRepository;
 import com.e106.reco.domain.artist.entity.Artist;
 import com.e106.reco.domain.artist.entity.Position;
 import com.e106.reco.domain.artist.user.dto.CustomUserDetails;
-import com.e106.reco.domain.board.repository.ArtistRepository;
+import com.e106.reco.domain.artist.repository.ArtistRepository;
 import com.e106.reco.domain.chat.dto.ChatRoomResponse;
 import com.e106.reco.domain.chat.dto.RoomRequest;
 import com.e106.reco.domain.chat.dto.RoomResponse;
@@ -16,6 +16,7 @@ import com.e106.reco.domain.chat.entity.ChatRoom;
 import com.e106.reco.domain.chat.entity.Room;
 import com.e106.reco.domain.chat.entity.RoomState;
 import com.e106.reco.domain.chat.repository.ChatArtistRedisRepository;
+import com.e106.reco.domain.chat.repository.ChatArtistStateRepository;
 import com.e106.reco.domain.chat.repository.ChatRepository;
 import com.e106.reco.domain.chat.repository.ChatRoomRepository;
 import com.e106.reco.domain.chat.repository.RoomRepository;
@@ -55,6 +56,7 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final CrewUserRepository crewUserRepository;
     private final ChatArtistRedisRepository chatArtistRedisRepository;
+    private final ChatArtistStateRepository chatArtistStateRepository;
 
 //    public Flux<Chat> getMsg(Long artistSeq, String roomSeq){
 //        chatArtistRepository.c
@@ -154,6 +156,7 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
                                         .artist(artist)
                                         .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(artistSeq).build())
                         .build());
+        chatArtistStateRepository.createJoinChatUserState(artistSeq, roomSeq);
         chatRoom.joinChatRoom();
         chatRoomRepository.save(chatRoom);
     }

@@ -12,6 +12,5 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChatArtistState {
-    private LocalDateTime joinTime;
     private LocalDateTime lastOnlineTime;
 }

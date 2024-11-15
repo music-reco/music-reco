@@ -17,7 +17,7 @@ import com.e106.reco.domain.board.entity.Board;
 import com.e106.reco.domain.board.entity.BoardState;
 import com.e106.reco.domain.board.entity.Comment;
 import com.e106.reco.domain.board.entity.Source;
-import com.e106.reco.domain.board.repository.ArtistRepository;
+import com.e106.reco.domain.artist.repository.ArtistRepository;
 import com.e106.reco.domain.board.repository.BoardRepository;
 import com.e106.reco.domain.board.repository.CommentRepository;
 import com.e106.reco.domain.board.repository.SourceRepository;
