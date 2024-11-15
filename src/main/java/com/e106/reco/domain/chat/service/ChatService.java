@@ -36,6 +36,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import static com.e106.reco.global.error.errorcode.ArtistErrorCode.ARTIST_NOT_FOUND;
 import static com.e106.reco.global.error.errorcode.ChatErrorCode.ARTIST_NOT_IN_CHAT;
@@ -182,36 +183,37 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
                         .orElseThrow(()-> new BusinessException(ARTIST_NOT_FOUND));
 
         Room room = chatRoomRepository.findPersonalChatRoomBetweenArtists(roomRequest.getSenderSeq(), roomRequest.getReceiversSeq().getFirst())
-                .orElse(room = roomRepository.save(Room.builder().build()));
+                .orElse(roomRepository.save(Room.builder().build()));
 
-        LocalDateTime now = LocalDateTime.now();
         ChatRoom senderRoom = chatRoomRepository.findByPk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(sender.getSeq()).build())
                 .orElse(chatRoomRepository.save(ChatRoom.builder()
                         .artist(sender)
                         .room(room)
-                        .joinAt(now)
                         .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(sender.getSeq()).build())
                         .state(RoomState.PERSONAL)
                         .build())
                 );
-        if(senderRoom.getJoinAt().equals(null)) {
+        if(Objects.isNull(senderRoom.getJoinAt())) {
             senderRoom.joinChatRoom();
             chatArtistStateRepository.createJoinChatUserState(sender.getSeq(), room.getSeq());
+        }else{
+            log.info("roomTime 있음 {}", senderRoom.getJoinAt());
         }
 
         ChatRoom receiverRoom = chatRoomRepository.findByPk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(receiver.getSeq()).build())
                 .orElse(chatRoomRepository.save(ChatRoom.builder()
-                        .artist(sender)
+                        .artist(receiver)
                         .room(room)
-                        .joinAt(now)
                         .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(receiver.getSeq()).build())
                         .state(RoomState.PERSONAL)
                         .build())
                 );
 
-        if(receiverRoom.getJoinAt().equals(null)) {
+        if(Objects.isNull(receiverRoom.getJoinAt())) {
             receiverRoom.joinChatRoom();
             chatArtistStateRepository.createJoinChatUserState(receiver.getSeq(), room.getSeq());
+        }else{
+            log.info("roomTime 있음", senderRoom.getJoinAt());
         }
 
         return room.getSeq();
