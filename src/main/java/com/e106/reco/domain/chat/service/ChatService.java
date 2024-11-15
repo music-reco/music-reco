@@ -70,10 +70,12 @@ public class ChatService {
         AuthUtil.getWebfluxCustomUserDetails()
                 .subscribe(user -> artistCertification(user.getSeq(), artist));
 
-        return (Flux<Chat>) chatArtistStateRepository.getJoinChatUserState(artistSeq, roomSeq).subscribe(
-                chatArtist -> chatRepository.mFindByGroupSeqAfterJoin(roomSeq.toString(), LocalDateTime.parse(chatArtist.getJoinAt(), formatter))
-                        .subscribeOn(Schedulers.boundedElastic())
-        );
+        return chatArtistStateRepository.getJoinChatUserState(artistSeq, roomSeq)
+                .flatMapMany(chatArtist ->
+                        chatRepository.mFindByGroupSeqAfterJoin(roomSeq.toString(),
+                                        LocalDateTime.parse(chatArtist.getJoinAt(), formatter))
+                                .subscribeOn(Schedulers.boundedElastic())
+                );
 
 
     }
