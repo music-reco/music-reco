@@ -195,8 +195,8 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
                         .build())
                 );
         if(senderRoom.getJoinAt().equals(null)) {
-            chatArtistStateRepository.createJoinChatUserState(sender.getSeq(), room.getSeq());
             senderRoom.joinChatRoom();
+            chatArtistStateRepository.createJoinChatUserState(sender.getSeq(), room.getSeq());
         }
 
         ChatRoom receiverRoom = chatRoomRepository.findByPk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(receiver.getSeq()).build())
@@ -210,8 +210,8 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
                 );
 
         if(receiverRoom.getJoinAt().equals(null)) {
-            chatArtistStateRepository.createJoinChatUserState(receiver.getSeq(), room.getSeq());
             receiverRoom.joinChatRoom();
+            chatArtistStateRepository.createJoinChatUserState(receiver.getSeq(), room.getSeq());
         }
 
         return room.getSeq();
