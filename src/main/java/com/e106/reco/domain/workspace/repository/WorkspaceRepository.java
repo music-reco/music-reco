@@ -15,6 +15,6 @@ public interface WorkspaceRepository extends JpaRepository<Workspace, Long> {
     Page<Workspace> findByArtistSeqAndStateNot(Long artistSeq, WorkspaceState state, Pageable pageable);
 
     @Query("SELECT w FROM Workspace w JOIN FETCH w.artist a " +
-            "WHERE w.seq = :artistSeq")
-    Optional<Workspace> findByArtistSeq(Long artistSeq);
+            "WHERE w.seq = :workspaceSeq")
+    Optional<Workspace> findByWorkspaceSeq(Long workspaceSeq);
 }

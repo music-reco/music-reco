@@ -148,12 +148,15 @@ public class WorkspaceService {
     @Transactional(readOnly = true)
     public WorkspaceDetailResponse getWorkspaceDetail(Long workspaceSeq) {
         Long artistSeq = AuthUtil.getCustomUserDetails().getSeq();
-
+        log.info("artistSeq: {}", artistSeq);
+        log.info("workspaceSeq : {}", workspaceSeq);
         Workspace workspace = getWorkspace(workspaceSeq, artistSeq);
-
         WorkspaceRole role = getRole(workspace);
 
-        if (role == WorkspaceRole.VIEWER || workspace.getState() != WorkspaceState.PUBLIC)
+        log.info("role : {}", role.name());
+        log.info("workspaceState : {}", workspace.getState());
+
+        if (role == WorkspaceRole.VIEWER && workspace.getState() != WorkspaceState.PUBLIC)
             throw new BusinessException(WorkspaceErrorCode.NOT_PUBLIC_WORKSPACE);
 
         List<Sound> sounds = getSounds(workspaceSeq);
@@ -285,8 +288,8 @@ public class WorkspaceService {
     }
 
     private Workspace getWorkspace(Long workspaceSeq, Long artistSeq) {
-        return workspaceRepository.findByArtistSeq(workspaceSeq)
-                .orElseThrow(() -> new BusinessException(WorkspaceErrorCode.NOT_PUBLIC_WORKSPACE));
+        return workspaceRepository.findByWorkspaceSeq(workspaceSeq)
+                .orElseThrow(() -> new BusinessException(WorkspaceErrorCode.WORKSPACE_NOT_FOUND));
     }
 
     private WorkspaceDetailResponse toDetailResponse(Workspace workspace, List<Sound> sounds, WorkspaceRole role) {
