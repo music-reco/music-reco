@@ -44,9 +44,9 @@ public class Follow {
 	@JoinColumn(name = "fan_seq")
 	private User fanUser;
 
-	@Column(name = "target_type", nullable = false)
-	@Enumerated(EnumType.STRING)
-	private TargetType targetType;   // 팔로우 대상의 유형 (USER 또는 CREW)
+//	@Column(name = "target_type", nullable = false)
+//	@Enumerated(EnumType.STRING)
+//	private TargetType targetType;   // 팔로우 대상의 유형 (USER 또는 CREW)
 
 	@Embeddable
 	@Getter
