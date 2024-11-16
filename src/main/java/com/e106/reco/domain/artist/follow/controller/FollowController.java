@@ -23,7 +23,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FollowController {
 	private final FollowService followService;
-	private final TokenService tokenService;
 
 	// 팔로우 추가
 	@PostMapping
@@ -55,7 +54,7 @@ public class FollowController {
 //	@DeleteMapping("")
 //	public ResponseEntity<CommonResponse> removeFollow(@RequestParam Long targetSeq,
 //		@RequestParam Long fanSeq
-//		//                                                       @AuthenticationPrincipal UserDetails userDetails,
+//		//                                                       @Aut`henticationPrincipal UserDetails userDetails,
 ////                                                       HttpServletRequest request) {
 //		//        Long tokenFanSeq = Long.parseLong(userDetails.getUsername());
 ////		Long tokenFanSeq = tokenService.getUserDto(request).getSeq();

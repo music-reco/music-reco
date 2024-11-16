@@ -13,6 +13,4 @@ import lombok.NoArgsConstructor;
 public class FollowRequest {
     @NotNull
     private Long targetSeq;
-    @NotNull
-    private Long fanSeq;
 }
