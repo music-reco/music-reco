@@ -9,7 +9,10 @@ import java.util.Optional;
 
 public interface FollowRepository extends JpaRepository<Follow, Follow.PK> {
 
-    @Query("SELECT f FROM Follow f WHERE f.pk.targetSeq = :targetSeq AND f.pk.fanSeq = :fanSeq")
+    @Query("SELECT EXISTS " +
+            "(SELECT 1 FROM Follow f " +
+            "WHERE f.pk.targetSeq = :targetSeq " +
+            "AND f.pk.fanSeq = :fanSeq)")
     boolean existsByFollow(Long targetSeq, Long fanSeq);
 
 //    boolean existsByPk_TargetSeqAndPk_FanSeq(Long targetSeq, Long fanSeq);
