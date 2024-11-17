@@ -71,6 +71,7 @@ public class WorkspaceService {
                                                                MultipartFile file, List<String> stemList, String splitter) {
         Long artistSeq = AuthUtil.getCustomUserDetails().getSeq();
         Workspace workspace = Workspace.of(workspaceRequest, artistSeq);
+        workspaceRepository.save(workspace);
         String contentType = file.getContentType();
         log.info("Original ContentType: {}", contentType);
 
@@ -104,8 +105,7 @@ public class WorkspaceService {
             log.info("Temporary file created at: {}", tempFile.getAbsolutePath());
 
             final File audioFile = tempFile;
-            Long seq = workspaceRepository.save(workspace).getSeq();
-            log.info("workspaceSeq : {}", seq);
+
             List<CompletableFuture<AudioDivideResponse>> futures = stemList.stream()
                     .map(stem -> divideService.divideAudioFile(audioFile, contentType, stem, splitter)
                             .thenApply(response -> {
