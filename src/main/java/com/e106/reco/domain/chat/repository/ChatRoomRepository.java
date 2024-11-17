@@ -27,7 +27,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long>{
     @Query("select cr from ChatRoom cr where cr.room.seq = :roomSeq AND cr.state != com.e106.reco.domain.chat.entity.RoomState.INACTIVE")
     List<ChatRoom> findExistByRoomSeq(@Param("roomSeq") Long roomSeq);
 
-    @Query("select cr.room from ChatRoom cr where cr.artist.seq = :artistSeq AND cr.state != com.e106.reco.domain.chat.entity.RoomState.INACTIVE")
+    @Query("select cr.room from ChatRoom cr where cr.artist.seq = :artistSeq AND cr.joinAt is not null")
     List<Room> findExistRoomsByArtistSeq(@Param("artistSeq") Long artistSeq);
 
     @Query("select cr.artist from ChatRoom cr where cr.room.seq = :roomSeq AND cr.state != com.e106.reco.domain.chat.entity.RoomState.INACTIVE")
