@@ -119,8 +119,8 @@ public class WorkspaceController {
 
     @PostMapping("/workspaces/{workspaceSeq}/state")
     public ResponseEntity<CommonResponse> modifyState(@PathVariable Long workspaceSeq,
-                                                      @RequestBody ModifyState modifyState) {
-        return ResponseEntity.ok(workspaceService.modifyState(workspaceSeq, modifyState));
+                                                      @RequestBody ModifyState sessionToSave) {
+        return ResponseEntity.ok(workspaceService.modifyState(workspaceSeq, sessionToSave));
     }
 
 }
