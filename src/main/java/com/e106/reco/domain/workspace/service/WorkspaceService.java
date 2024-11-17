@@ -73,7 +73,7 @@ public class WorkspaceService {
         log.info("divide start...");
         Long artistSeq = AuthUtil.getCustomUserDetails().getSeq();
         Workspace w = Workspace.of(workspaceRequest, artistSeq);
-        Workspace workspace = workspaceRepository.saveAndFlush(w);
+        Workspace workspace = workspaceRepository.save(w);
         log.info("w워크스페이스 생성 했다? : {}", w.getSeq());
         log.info("workspace워크스페이스 생성 했다? : {}", workspace.getSeq());
 //        log.info();
