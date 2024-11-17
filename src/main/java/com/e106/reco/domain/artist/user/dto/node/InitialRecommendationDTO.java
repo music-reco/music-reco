@@ -9,6 +9,7 @@ import java.util.Map;
 @Builder
 public class InitialRecommendationDTO {
     private String name;
+    private String nickname;
     private Long artistSeq;
     private String genre;
     private String position;

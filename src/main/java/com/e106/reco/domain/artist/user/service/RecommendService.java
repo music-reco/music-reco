@@ -47,6 +47,7 @@ public class RecommendService {
     private InitialRecommendationDTO convertToDTO(InitialRecommendationDTO recommendationDTO, Artist artist) {
         return InitialRecommendationDTO.builder()
                 .name(recommendationDTO.getName())
+                .nickname(artist.getNickname())
                 .artistSeq(recommendationDTO.getArtistSeq())
                 .genre(artist.getGenre().name())
                 .position(artist.getPosition().getName())
