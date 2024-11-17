@@ -67,18 +67,15 @@ public class WorkspaceService {
 
         return workspaceRepository.save(workspace).getSeq();
     }
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Workspace createWorkspace(WorkspaceRequest workspaceRequest, Long artistSeq) {
-        Workspace w = Workspace.of(workspaceRequest, artistSeq);
-        return workspaceRepository.saveAndFlush(w);
-    }
+
     @Async(value = "asyncExecutor2")
     public CompletableFuture<List<AudioDivideResponse>> divide(WorkspaceRequest workspaceRequest,
                                                                MultipartFile file, List<String> stemList, String splitter) {
         log.info("divide start...");
         Long artistSeq = AuthUtil.getCustomUserDetails().getSeq();
-        Workspace workspace = createWorkspace(workspaceRequest, artistSeq);
-        log.info("workspaceSeq = {}", workspace.getSeq());
+        Workspace workspace = Workspace.of(workspaceRequest, artistSeq);
+        Long seq = workspaceRepository.save(workspace).getSeq();
+        log.info("workspaceSeq = {}", seq);
         String contentType = file.getContentType();
         log.info("Original ContentType: {}", contentType);
 
