@@ -177,6 +177,17 @@ public class WorkspaceService {
             Sound sound = Sound.fork(originSound, newSeq);
             soundRepository.save(sound);
         });
+
+        familyTreeRepository.findAllByPk_ChildWorkspaceSeqOrderByCreatedAt(workspaceSeq)
+                .forEach(familyTree -> {
+                    FamilyTree newFamilyTree = FamilyTree.builder()
+                            .pk(new FamilyTree.PK(familyTree.getPk().getParentWorkspaceSeq(), newSeq))
+                            .parentWorkspace(originWorkspace)
+                            .childWorkspace(newWorkspace)
+                            .build();
+                    familyTreeRepository.save(newFamilyTree);
+                });
+
         FamilyTree familyTree = FamilyTree.builder()
                 .pk(new FamilyTree.PK(workspaceSeq, newSeq))
                 .parentWorkspace(originWorkspace)
