@@ -109,7 +109,7 @@ public interface RecommendRepository extends Neo4jRepository<ArtistNode, Long> {
          otherRegion.name as region
     WHERE totalScore > 0
 
-    RETURN name, totalScore as similarityScore, genre, position, region
+    RETURN name, totalScore as similarityScore, genre, position, region, artistSeq
     ORDER BY totalScore DESC, name
     LIMIT $limit
     """)
