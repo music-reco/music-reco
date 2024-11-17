@@ -131,8 +131,8 @@ public class AuthService implements UserDetailsService, ReactiveUserDetailsServi
         artist.setArtistSeq(userSeq);
         artist.setName(joinDto.getName());
         artist.setRegion(region);
-        artist.setGenres(genre);
-        artist.setInstruments(instruments);
+        artist.setGenre(genre);
+        artist.setInstrument(instruments);
 
         recommendRepository.save(artist);
         return new CommonResponse("회원가입 완료");
