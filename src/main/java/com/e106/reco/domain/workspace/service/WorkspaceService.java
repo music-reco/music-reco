@@ -1,6 +1,7 @@
 package com.e106.reco.domain.workspace.service;
 
 import com.e106.reco.domain.workspace.dto.SoundResponse;
+import com.e106.reco.domain.workspace.dto.TreeInfoResponse;
 import com.e106.reco.domain.workspace.dto.TreeResponse;
 import com.e106.reco.domain.workspace.dto.WorkspaceDetailResponse;
 import com.e106.reco.domain.workspace.dto.WorkspaceDto;
@@ -70,8 +71,10 @@ public class WorkspaceService {
     public CompletableFuture<List<AudioDivideResponse>> divide(WorkspaceRequest workspaceRequest,
                                                                MultipartFile file, List<String> stemList, String splitter) {
         Long artistSeq = AuthUtil.getCustomUserDetails().getSeq();
-        Workspace workspace = Workspace.of(workspaceRequest, artistSeq);
-        workspaceRepository.saveAndFlush(workspace);
+        Workspace w = Workspace.of(workspaceRequest, artistSeq);
+        Workspace workspace = workspaceRepository.saveAndFlush(w);
+        log.info("w워크스페이스 생성 했다? : {}", w.getSeq());
+        log.info("workspace워크스페이스 생성 했다? : {}", workspace.getSeq());
 //        log.info();
         String contentType = file.getContentType();
         log.info("Original ContentType: {}", contentType);
@@ -104,12 +107,13 @@ public class WorkspaceService {
             }
 
             log.info("Temporary file created at: {}", tempFile.getAbsolutePath());
-
+            log.info("workspaceSeq : {}", workspace.getSeq());
             final File audioFile = tempFile;
 
             List<CompletableFuture<AudioDivideResponse>> futures = stemList.stream()
                     .map(stem -> divideService.divideAudioFile(audioFile, contentType, stem, splitter)
                             .thenApply(response -> {
+                                log.info("음악 저장");
                                 saveSound(response, workspace, stem);
                                 return response;
                             })
@@ -243,15 +247,18 @@ public class WorkspaceService {
         return new CommonResponse("ok");
     }
 
-    public List<TreeResponse> getTree(Long workspaceSeq) {
+    public TreeResponse getTree(Long workspaceSeq) {
         Long artistSeq = AuthUtil.getCustomUserDetails().getSeq();
 
         Workspace workspace = getWorkspace(workspaceSeq, artistSeq);
 
-        return familyTreeRepository.findAllByPk_ChildWorkspaceSeqOrderByCreatedAt(workspace.getSeq())
+        return new TreeResponse(
+                workspace.getOriginTitle(),
+                workspace.getOriginSinger(),
+                familyTreeRepository.findAllByPk_ChildWorkspaceSeqOrderByCreatedAt(workspace.getSeq())
                 .stream()
                 .map(this::toTreeResponse)
-                .toList();
+                .toList());
     }
     public CommonResponse modifyThumbnail(Long workspaceSeq, MultipartFile file) {
         Long artistSeq = AuthUtil.getCustomUserDetails().getSeq();
@@ -345,8 +352,8 @@ public class WorkspaceService {
                 .build();
     }
 
-    private TreeResponse toTreeResponse(FamilyTree familyTree) {
-        return TreeResponse.builder()
+    private TreeInfoResponse toTreeResponse(FamilyTree familyTree) {
+        return TreeInfoResponse.builder()
                 .workspaceSeq(familyTree.getPk().getParentWorkspaceSeq())
                 .artistName(familyTree.getParentWorkspace().getArtist().getNickname())
                 .workspaceName(familyTree.getParentWorkspace().getName())

@@ -5,12 +5,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Builder
 public class TreeResponse {
-    private Long workspaceSeq;
-    private String workspaceName;
-    private String artistName;
+    private String originTitle;
+    private String originSinger;
+    private List<TreeInfoResponse> treeInfoResponseList;
 }

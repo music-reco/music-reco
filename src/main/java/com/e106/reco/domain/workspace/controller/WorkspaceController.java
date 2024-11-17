@@ -86,7 +86,7 @@ public class WorkspaceController {
     }
 
     @GetMapping("/workspaces/{workspaceSeq}/tree")
-    public ResponseEntity<List<TreeResponse>> getTree(@PathVariable Long workspaceSeq){
+    public ResponseEntity<TreeResponse> getTree(@PathVariable Long workspaceSeq){
         return ResponseEntity.ok(workspaceService.getTree(workspaceSeq));
     }
 
