@@ -113,14 +113,14 @@ public class WorkspaceController {
 
     @PostMapping("/workspaces/{workspaceSeq}/point")
     public ResponseEntity<CommonResponse> modifyPoint(@PathVariable Long workspaceSeq,
-                                                      @RequestBody List<ModifyPoint> sessions) {
-        return ResponseEntity.ok(workspaceService.modifyPoint(workspaceSeq, sessions));
+                                                      @RequestBody List<ModifyPoint> sessionToSave) {
+        return ResponseEntity.ok(workspaceService.modifyPoint(workspaceSeq, sessionToSave));
     }
 
     @PostMapping("/workspaces/{workspaceSeq}/state")
     public ResponseEntity<CommonResponse> modifyState(@PathVariable Long workspaceSeq,
-                                                      @RequestBody ModifyState sessionToSave) {
-        return ResponseEntity.ok(workspaceService.modifyState(workspaceSeq, sessionToSave));
+                                                      @RequestBody ModifyState modifyState) {
+        return ResponseEntity.ok(workspaceService.modifyState(workspaceSeq, modifyState));
     }
 
 }
