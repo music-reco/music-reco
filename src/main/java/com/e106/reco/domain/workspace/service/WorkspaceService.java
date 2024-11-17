@@ -67,7 +67,7 @@ public class WorkspaceService {
         return workspaceRepository.save(workspace).getSeq();
     }
 
-    @Async
+    @Async(value = "asyncExecutor2")
     public CompletableFuture<List<AudioDivideResponse>> divide(WorkspaceRequest workspaceRequest,
                                                                MultipartFile file, List<String> stemList, String splitter) {
         Long artistSeq = AuthUtil.getCustomUserDetails().getSeq();

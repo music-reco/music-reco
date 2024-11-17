@@ -20,4 +20,13 @@ public class AsyncConfig {
         temp.initialize();
         return new DelegatingSecurityContextAsyncTaskExecutor(temp);
     }
+
+    @Bean
+    public Executor asyncExecutor2() {
+        ThreadPoolTaskExecutor temp = new ThreadPoolTaskExecutor();
+        temp.setCorePoolSize(15);
+        temp.setThreadNamePrefix("exec2-");
+        temp.initialize();
+        return new DelegatingSecurityContextAsyncTaskExecutor(temp);
+    }
 }
