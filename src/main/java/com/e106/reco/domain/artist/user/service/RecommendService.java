@@ -31,7 +31,7 @@ public class RecommendService {
                             log.info("name : {}", projection.getName());
                             Artist artist = artistRepository.findById(seq).orElse(null);
                             assert artist != null;
-                            return convertToDTO(projection, artist.getProfileImage());
+                            return convertToDTO(projection, artist);
                         })
                         .toList();
 //        return recommendations;
@@ -44,14 +44,14 @@ public class RecommendService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
-    private InitialRecommendationDTO convertToDTO(InitialRecommendationProjection projection, String profileImage) {
+    private InitialRecommendationDTO convertToDTO(InitialRecommendationProjection projection, Artist artist) {
         return InitialRecommendationDTO.builder()
                 .name(projection.getName())
                 .artistSeq(projection.getArtistSeq())
-                .genre(projection.getGenre())
-                .position(projection.getPosition())
-                .profileImage(profileImage)
-                .region(projection.getRegion())
+                .genre(artist.getGenre().name())
+                .position(artist.getPosition().getName())
+                .profileImage(artist.getProfileImage())
+                .region(artist.getRegion().getName())
                 .similarityScore(projection.getSimilarityScore())
                 .build();
     }
