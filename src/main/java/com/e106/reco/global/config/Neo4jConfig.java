@@ -19,7 +19,7 @@ public class Neo4jConfig {
         return new Neo4jTransactionManager(driver);
     }
     // JPA 트랜잭션 매니저
-    @Bean(name = "jpaTransactionManager")
+    @Bean(name = "transactionManager")
     @Primary  // 기본 트랜잭션 매니저로 설정
     public PlatformTransactionManager transactionManager(
             EntityManagerFactory entityManagerFactory) {
