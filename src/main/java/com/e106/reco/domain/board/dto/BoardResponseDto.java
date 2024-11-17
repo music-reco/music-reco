@@ -24,8 +24,9 @@ public class BoardResponseDto {
     private String content;
     private List<String> sources;
     private List<CommentResponseDto> comments;
+    private String liked;
 
-    public static BoardResponseDto of(Board board, List<Source> sources, List<CommentResponseDto> comments) {
+    public static BoardResponseDto of(Board board, List<Source> sources, List<CommentResponseDto> comments, String liked) {
         return BoardResponseDto.builder()
                 .boardSeq(board.getSeq())
                 .artistDto(ArtistSummaryDto.of(board.getArtist()))
@@ -34,6 +35,7 @@ public class BoardResponseDto {
                 .content(board.getContent())
                 .sources(sources.stream().map(Source::getName).toList())
                 .comments(comments)
+                .liked(liked)
                 .build();
     }
 }

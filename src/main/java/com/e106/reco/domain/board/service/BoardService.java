@@ -7,6 +7,7 @@ import com.e106.reco.domain.artist.crew.repository.CrewUserRepository;
 import com.e106.reco.domain.artist.entity.Artist;
 import com.e106.reco.domain.artist.entity.Position;
 import com.e106.reco.domain.artist.user.dto.CustomUserDetails;
+import com.e106.reco.domain.artist.user.entity.User;
 import com.e106.reco.domain.board.dto.ArtistSummaryDto;
 import com.e106.reco.domain.board.dto.BoardRequestDto;
 import com.e106.reco.domain.board.dto.BoardResponseDto;
@@ -16,13 +17,17 @@ import com.e106.reco.domain.board.dto.CommentResponseDto;
 import com.e106.reco.domain.board.entity.Board;
 import com.e106.reco.domain.board.entity.BoardState;
 import com.e106.reco.domain.board.entity.Comment;
+import com.e106.reco.domain.board.entity.Like;
 import com.e106.reco.domain.board.entity.Source;
 import com.e106.reco.domain.artist.repository.ArtistRepository;
 import com.e106.reco.domain.board.repository.BoardRepository;
 import com.e106.reco.domain.board.repository.CommentRepository;
+import com.e106.reco.domain.board.repository.LikeRepository;
 import com.e106.reco.domain.board.repository.SourceRepository;
 import com.e106.reco.global.common.CommonResponse;
 import com.e106.reco.global.error.errorcode.BoardErrorCode;
+import com.e106.reco.global.error.errorcode.CommonErrorCode;
+import com.e106.reco.global.error.errorcode.ErrorCode;
 import com.e106.reco.global.error.exception.BusinessException;
 import com.e106.reco.global.s3.S3FileService;
 import com.e106.reco.global.util.AuthUtil;
@@ -54,6 +59,7 @@ public class BoardService {
     private final CrewUserRepository crewUserRepository;
     private final SourceRepository sourceRepository;
     private final S3FileService s3FileService;
+    private final LikeRepository likeRepository;
     private final int FILE_SIZE = 15;
 
     public BoardsResponseDto getBoards(Long artistSeq, Pageable pageable) {
@@ -70,7 +76,9 @@ public class BoardService {
             boards = boardRepository.findPublicBoardByArtist_seq(artistSeq, pageable);
 
         return BoardsResponseDto.of(
-                boards.stream().map(board -> BoardsResponseDto.of(board, commentRepository.countByBoard_Seq(board.getSeq()))).toList(),
+                boards.stream().map(board -> BoardsResponseDto.of(board,
+                        commentRepository.countByBoard_Seq(board.getSeq()),
+                        likeRepository.countByPk_BoardSeq(board.getSeq()))).toList(),
                 ArtistSummaryDto.of(artist)
         );
     }
@@ -92,8 +100,10 @@ public class BoardService {
 
         List<Source> sources = sourceRepository.findByBoard_seq(boardSeq);
         List<CommentResponseDto> comments = getComment(boardSeq, pageable);
+        if(isLike(user.getSeq(), boardSeq))
+            return BoardResponseDto.of(board, sources, comments, "liked");
 
-        return BoardResponseDto.of(board, sources, comments);
+        return BoardResponseDto.of(board, sources, comments, "none");
     }
     public CommonResponse updateComment(CommentRequestDto commentRequestDto, Long commentSeq){
         CustomUserDetails user = AuthUtil.getCustomUserDetails();
@@ -240,5 +250,41 @@ public class BoardService {
         board.changeState(BoardState.INACTIVE);
         board.changeUpdatedAt();
         return new CommonResponse("글 수정 완료");
+    }
+
+    private boolean isLike(Long userSeq, Long boardSeq){
+        return likeRepository.hasLike(userSeq, boardSeq);
+    }
+
+    public CommonResponse like(Long boardSeq) {
+        Long userSeq = AuthUtil.getCustomUserDetails().getSeq();
+
+        if(isLike(userSeq, boardSeq))
+            throw new BusinessException(CommonErrorCode.valueOf("이미 좋아요한 글입니다."));
+
+        Like like = Like.builder()
+                .pk(new Like.PK(boardSeq, userSeq))
+                .board(Board.builder()
+                        .seq(boardSeq)
+                        .build())
+                .user(User.builder()
+                        .seq(userSeq)
+                        .build())
+                .build();
+
+        likeRepository.save(like);
+
+        return new CommonResponse("좋아요 완료!");
+    }
+
+    public CommonResponse cancelLike(Long boardSeq) {
+        Long userSeq = AuthUtil.getCustomUserDetails().getSeq();
+
+        Like like = likeRepository.findById(new Like.PK(boardSeq, userSeq))
+                .orElseThrow(() -> new BusinessException(CommonErrorCode.valueOf("좋아요가 되어있지 않습니다.")));
+
+        likeRepository.delete(like);
+
+        return new CommonResponse("좋아요 삭제");
     }
 }

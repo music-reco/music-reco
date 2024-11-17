@@ -78,4 +78,14 @@ public class BoardController {
     public ResponseEntity<CommonResponse> updateComment(@PathVariable Long commentSeq, @RequestBody @Valid CommentRequestDto commentRequestDto){
         return ResponseEntity.ok(boardService.updateComment(commentRequestDto, commentSeq));
     }
+
+    @PostMapping("/{boardSeq}/like")
+    public ResponseEntity<CommonResponse> like(@PathVariable Long boardSeq){
+        return ResponseEntity.ok(boardService.like(boardSeq));
+    }
+
+    @DeleteMapping("/{boardSeq}/like")
+    public ResponseEntity<CommonResponse> cancelLike(@PathVariable Long boardSeq){
+        return ResponseEntity.ok(boardService.cancelLike(boardSeq));
+    }
 }

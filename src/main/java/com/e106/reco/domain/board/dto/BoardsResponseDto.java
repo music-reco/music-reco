@@ -31,12 +31,13 @@ public class BoardsResponseDto {
         private int likes;
     }
 
-    public static BoardResponseDto of(Board board, int comments) {
+    public static BoardResponseDto of(Board board, int comments, int likes) {
         return BoardResponseDto.builder()
                 .seq(board.getSeq())
                 .state(board.getState().name())
                 .title(board.getTitle())
                 .createTime(board.getCreatedAt())
+                .likes(likes)
                 .comments(comments)
                 .build();
     }
