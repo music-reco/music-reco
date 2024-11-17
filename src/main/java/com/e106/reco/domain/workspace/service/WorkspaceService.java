@@ -70,6 +70,7 @@ public class WorkspaceService {
     @Async(value = "asyncExecutor2")
     public CompletableFuture<List<AudioDivideResponse>> divide(WorkspaceRequest workspaceRequest,
                                                                MultipartFile file, List<String> stemList, String splitter) {
+        log.info("divide start...");
         Long artistSeq = AuthUtil.getCustomUserDetails().getSeq();
         Workspace w = Workspace.of(workspaceRequest, artistSeq);
         Workspace workspace = workspaceRepository.saveAndFlush(w);
