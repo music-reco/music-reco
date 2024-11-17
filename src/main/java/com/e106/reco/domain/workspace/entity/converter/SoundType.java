@@ -1,5 +1,6 @@
 package com.e106.reco.domain.workspace.entity.converter;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -17,6 +18,7 @@ public enum SoundType {
     private final String name;
     private final String englishName;
 
+    @JsonCreator
     public static SoundType fromString(String source) {
         for (SoundType soundType : SoundType.values()) {
             if (soundType.getName().equals(source)) {
