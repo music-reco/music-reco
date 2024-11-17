@@ -25,13 +25,13 @@ public class RecommendService {
     private final ArtistRepository artistRepository;
     public List<InitialRecommendationDTO> getInitialRecommendations(Long artistSeq, int limit) {
         return recommendRepository.findInitialRecommendations(artistSeq, limit).stream()
-                        .map(projection -> {
-                            Long seq = projection.getArtistSeq();
-                            log.info("seq : {}", projection.getArtistSeq());
-                            log.info("name : {}", projection.getName());
+                        .map(recommendationDTO -> {
+                            Long seq = recommendationDTO.getArtistSeq();
+                            log.info("seq : {}", recommendationDTO.getArtistSeq());
+                            log.info("name : {}", recommendationDTO.getName());
                             Artist artist = artistRepository.findById(seq).orElse(null);
                             assert artist != null;
-                            return convertToDTO(projection, artist);
+                            return convertToDTO(recommendationDTO, artist);
                         })
                         .toList();
 //        return recommendations;
@@ -44,15 +44,15 @@ public class RecommendService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
-    private InitialRecommendationDTO convertToDTO(InitialRecommendationProjection projection, Artist artist) {
+    private InitialRecommendationDTO convertToDTO(InitialRecommendationDTO recommendationDTO, Artist artist) {
         return InitialRecommendationDTO.builder()
-                .name(projection.getName())
-                .artistSeq(projection.getArtistSeq())
+                .name(recommendationDTO.getName())
+                .artistSeq(recommendationDTO.getArtistSeq())
                 .genre(artist.getGenre().name())
                 .position(artist.getPosition().getName())
                 .profileImage(artist.getProfileImage())
                 .region(artist.getRegion().getName())
-                .similarityScore(projection.getSimilarityScore())
+                .similarityScore(recommendationDTO.getSimilarityScore())
                 .build();
     }
 //    private InitialRecommendationDTO convertToInitDTO(InitialRecommendationProjection projection) {
