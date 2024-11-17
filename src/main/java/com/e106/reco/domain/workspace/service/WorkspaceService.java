@@ -104,7 +104,8 @@ public class WorkspaceService {
             log.info("Temporary file created at: {}", tempFile.getAbsolutePath());
 
             final File audioFile = tempFile;
-            workspaceRepository.save(workspace);
+            Long seq = workspaceRepository.save(workspace).getSeq();
+            log.info("workspaceSeq : {}", seq);
             List<CompletableFuture<AudioDivideResponse>> futures = stemList.stream()
                     .map(stem -> divideService.divideAudioFile(audioFile, contentType, stem, splitter)
                             .thenApply(response -> {

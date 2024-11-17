@@ -59,6 +59,8 @@ public class WorkspaceController {
                 .thenAccept(results -> {
                     // FCM 알림 전송 등 모든 작업이 완료된 후의 처리
                     log.info("변환이 끝났습니다.");
+                    log.info("results = {}", results);
+//                    log.info(results.)
                     fcmService.sendMessageTo(new FcmSendDto(fcmToken, "변환이 끝났어요.","워크 스페이스에서 확인하세요."));
                 });
 
