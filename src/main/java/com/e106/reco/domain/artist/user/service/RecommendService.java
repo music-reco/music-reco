@@ -100,33 +100,33 @@ public class RecommendService {
         return String.join(". ", reasons);
     }
 
-    private String generateRecommendationReason(InitialRecommendationProjection projection) {
-        List<String> reasons = new ArrayList<>();
+//    private String generateRecommendationReason(InitialRecommendationProjection projection) {
+//        List<String> reasons = new ArrayList<>();
+//
+//        // 지역 매칭 (3점)
+//        if (projection.getArtistRegion() != null) {
+//            reasons.add(String.format("같은 %s 지역에서 활동", projection.getArtistRegion()));
+//        }
+//
+//        // 장르 매칭 (2점)
+//        if (!projection.getSharedGenres().isEmpty()) {
+//            reasons.add(String.format("공통 장르: %s", String.join(", ", projection.getSharedGenres())));
+//        }
+//
+//        // 악기 매칭 (1점)
+//        if (!projection.getSharedInstruments().isEmpty()) {
+//            reasons.add(String.format("공통 악기: %s", String.join(", ", projection.getSharedInstruments())));
+//        }
+//
+//        return String.join(" • ", reasons);
+//    }
 
-        // 지역 매칭 (3점)
-        if (projection.getArtistRegion() != null) {
-            reasons.add(String.format("같은 %s 지역에서 활동", projection.getArtistRegion()));
-        }
-
-        // 장르 매칭 (2점)
-        if (!projection.getSharedGenres().isEmpty()) {
-            reasons.add(String.format("공통 장르: %s", String.join(", ", projection.getSharedGenres())));
-        }
-
-        // 악기 매칭 (1점)
-        if (!projection.getSharedInstruments().isEmpty()) {
-            reasons.add(String.format("공통 악기: %s", String.join(", ", projection.getSharedInstruments())));
-        }
-
-        return String.join(" • ", reasons);
-    }
-
-    private Map<String, Object> generateMatchDetails(InitialRecommendationProjection projection) {
-        Map<String, Object> details = new HashMap<>();
-        details.put("region", projection.getArtistRegion());
-        details.put("genres", projection.getSharedGenres());
-        details.put("instruments", projection.getSharedInstruments());
-        details.put("rawScore", projection.getSimilarityScore());
-        return details;
-    }
+//    private Map<String, Object> generateMatchDetails(InitialRecommendationProjection projection) {
+//        Map<String, Object> details = new HashMap<>();
+//        details.put("region", projection.getArtistRegion());
+//        details.put("genres", projection.getSharedGenres());
+//        details.put("instruments", projection.getSharedInstruments());
+//        details.put("rawScore", projection.getSimilarityScore());
+//        return details;
+//    }
 }
