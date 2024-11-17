@@ -1,5 +1,7 @@
 package com.e106.reco.domain.artist.user.service;
 
+import com.e106.reco.domain.artist.entity.Artist;
+import com.e106.reco.domain.artist.repository.ArtistRepository;
 import com.e106.reco.domain.artist.user.dto.node.ArtistRecommendationDTO;
 import com.e106.reco.domain.artist.user.dto.node.ArtistRecommendationProjection;
 import com.e106.reco.domain.artist.user.dto.node.InitialRecommendationDTO;
@@ -20,15 +22,18 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RecommendService {
     private final RecommendRepository recommendRepository;
-
+    private final ArtistRepository artistRepository;
     public List<InitialRecommendationDTO> getInitialRecommendations(Long artistSeq, int limit) {
         List<InitialRecommendationDTO> recommendations =
                 recommendRepository.findInitialRecommendations(artistSeq, limit);
         log.info("artistSeq : {}",artistSeq);
         log.info("recommendations : {}",recommendations);
         recommendations.forEach(recommendation -> {
-//            recommendation.getMatchDetails()
-            log.info("recommendation : {}",recommendation);
+            Long seq = recommendation.getArtistSeq();
+            Artist artist = artistRepository.findById(seq).orElse(null);
+            assert artist != null;
+            recommendation.setProfileImage(artist.getProfileImage());
+//            log.info("recommendation : {}",recommendation);
         });
         return recommendations;
     }

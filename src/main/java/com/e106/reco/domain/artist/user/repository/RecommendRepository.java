@@ -101,13 +101,14 @@ public interface RecommendRepository extends Neo4jRepository<ArtistNode, Long> {
 
     // 6. 최종 점수 계산 및 결과 반환
     WITH other.name as name,
+         other.artistSeq as artistSeq,
          regionScore + genreScore + instrumentScore as totalScore,
-         matchedGenres as sharedGenres,
-         matchedInstruments as sharedInstruments,
-         otherRegion.name as artistRegion
+         matchedGenres as genre,
+         matchedInstruments as position,
+         otherRegion.name as region
     WHERE totalScore > 0
 
-    RETURN name, totalScore as similarityScore, sharedGenres, sharedInstruments, artistRegion
+    RETURN name, totalScore as similarityScore, genre, position, region
     ORDER BY totalScore DESC, name
     LIMIT $limit
     """)
