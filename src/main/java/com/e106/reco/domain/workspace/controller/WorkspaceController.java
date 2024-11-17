@@ -55,7 +55,9 @@ public class WorkspaceController {
         log.info("변환시작합니다.");
         log.info("file = {}", file.getOriginalFilename());
         log.info("file = {}", file.getContentType());
-        workspaceService.divide(workspaceRequest, file, stemList, splitter)
+        Long seq = workspaceService.createWorkspace(workspaceRequest);
+        log.info("seq = {}", seq);
+        workspaceService.divide(workspaceRequest, file, stemList, splitter, seq)
                 .thenAccept(results -> {
                     // FCM 알림 전송 등 모든 작업이 완료된 후의 처리
                     log.info("변환이 끝났습니다.");

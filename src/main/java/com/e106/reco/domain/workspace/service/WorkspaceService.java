@@ -68,22 +68,28 @@ public class WorkspaceService {
         return workspaceRepository.save(workspace).getSeq();
     }
 
+    public Long createWorkspace(WorkspaceRequest workspaceRequest) {
+        Long artistSeq = AuthUtil.getCustomUserDetails().getSeq();
+
+        Workspace w = Workspace.of(workspaceRequest, artistSeq);
+        return workspaceRepository.save(w).getSeq();
+    }
+
     @Async(value = "asyncExecutor2")
     public CompletableFuture<List<AudioDivideResponse>> divide(WorkspaceRequest workspaceRequest,
-                                                               MultipartFile file, List<String> stemList, String splitter) {
+                                                               MultipartFile file, List<String> stemList, String splitter, Long workspaceSeq) {
         log.info("divide start...");
-        Long artistSeq = AuthUtil.getCustomUserDetails().getSeq();
-        Workspace workspace = Workspace.of(workspaceRequest, artistSeq);
-        Long seq = workspaceRepository.save(workspace).getSeq();
-        log.info("workspaceSeq = {}", seq);
+
+//        Workspace workspace = Workspace.of(workspaceRequest, artistSeq);
+//        log.info("workspaceSeq = {}", workspace.getSeq());
         String contentType = file.getContentType();
         log.info("Original ContentType: {}", contentType);
 
-        return processAudioFile(file, contentType, stemList, splitter, workspace);
+        return processAudioFile(file, contentType, stemList, splitter, workspaceSeq);
     }
 
     private CompletableFuture<List<AudioDivideResponse>> processAudioFile(
-            MultipartFile file, String contentType, List<String> stemList, String splitter, Workspace workspace) {
+            MultipartFile file, String contentType, List<String> stemList, String splitter, Long workspaceSeq) {
         File tempDir = new File(tempPath);
         if (!tempDir.exists()) {
             tempDir.mkdirs();
@@ -107,14 +113,14 @@ public class WorkspaceService {
             }
 
             log.info("Temporary file created at: {}", tempFile.getAbsolutePath());
-            log.info("workspaceSeq : {}", workspace.getSeq());
+            log.info("workspaceSeq : {}", workspaceSeq);
             final File audioFile = tempFile;
 
             List<CompletableFuture<AudioDivideResponse>> futures = stemList.stream()
                     .map(stem -> divideService.divideAudioFile(audioFile, contentType, stem, splitter)
                             .thenApply(response -> {
                                 log.info("음악 저장");
-                                saveSound(response, workspace, stem);
+                                saveSound(response, workspaceSeq, stem);
                                 return response;
                             })
                             .exceptionally(ex -> {
@@ -360,13 +366,15 @@ public class WorkspaceService {
                 .build();
     }
 
-    private void saveSound(AudioDivideResponse response, Workspace workspace, String stemType) {
+    private void saveSound(AudioDivideResponse response, Long workspaceSeq, String stemType) {
         // stemTrack 저장
         if (response.getStemTrackUrl() != null) {
             Sound stemTrack = Sound.builder()
                     .url(response.getStemTrackUrl())
                     .type(SoundType.fromString(stemType))  // enum으로 변환
-                    .workspace(workspace)
+                    .workspace(Workspace.builder()
+                            .seq(workspaceSeq)
+                            .build())
                     .startPoint(0d)
                     .endPoint(response.getDuration())
                     .build();
