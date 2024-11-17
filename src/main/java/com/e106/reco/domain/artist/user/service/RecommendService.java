@@ -24,18 +24,15 @@ public class RecommendService {
     private final RecommendRepository recommendRepository;
     private final ArtistRepository artistRepository;
     public List<InitialRecommendationDTO> getInitialRecommendations(Long artistSeq, int limit) {
-        List<InitialRecommendationDTO> recommendations =
-                recommendRepository.findInitialRecommendations(artistSeq, limit);
-        log.info("artistSeq : {}",artistSeq);
-        log.info("recommendations : {}",recommendations);
-        recommendations.forEach(recommendation -> {
-            Long seq = recommendation.getArtistSeq();
-            Artist artist = artistRepository.findById(seq).orElse(null);
-            assert artist != null;
-            recommendation.setProfileImage(artist.getProfileImage());
-//            log.info("recommendation : {}",recommendation);
-        });
-        return recommendations;
+        return recommendRepository.findInitialRecommendations(artistSeq, limit).stream()
+                        .map(projection -> {
+                            Long seq = projection.getArtistSeq();
+                            Artist artist = artistRepository.findById(seq).orElse(null);
+                            assert artist != null;
+                            return convertToDTO(projection, artist.getProfileImage());
+                        })
+                        .toList();
+//        return recommendations;
     }
     public List<ArtistRecommendationDTO> getRecommendations(Long artistSeq, int limit) {
         List<ArtistRecommendationProjection> recommendations =
@@ -44,6 +41,17 @@ public class RecommendService {
         return recommendations.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
+    }
+    private InitialRecommendationDTO convertToDTO(InitialRecommendationProjection projection, String profileImage) {
+        return InitialRecommendationDTO.builder()
+                .name(projection.getName())
+                .artistSeq(projection.getArtistSeq())
+                .genre(projection.getGenre())
+                .position(projection.getPosition())
+                .profileImage(profileImage)
+                .region(projection.getRegion())
+                .similarityScore(projection.getSimilarityScore())
+                .build();
     }
 //    private InitialRecommendationDTO convertToInitDTO(InitialRecommendationProjection projection) {
 //        return InitialRecommendationDTO.builder()

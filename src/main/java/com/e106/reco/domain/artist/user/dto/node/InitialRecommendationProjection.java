@@ -4,8 +4,9 @@ import java.util.List;
 
 public interface InitialRecommendationProjection {
     String getName();
+    Long getArtistSeq();
+    String getGenre();
+    String getPosition();
+    String getRegion();
     double getSimilarityScore();
-    List<String> getSharedGenres();
-    List<String> getSharedInstruments();
-    String getArtistRegion();
 }

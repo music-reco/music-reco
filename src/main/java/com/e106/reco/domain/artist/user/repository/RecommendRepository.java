@@ -4,6 +4,7 @@ import com.e106.reco.domain.artist.user.dto.node.ArtistRecommendation;
 import com.e106.reco.domain.artist.user.dto.node.ArtistRecommendationProjection;
 import com.e106.reco.domain.artist.user.dto.node.GenreStatistics;
 import com.e106.reco.domain.artist.user.dto.node.InitialRecommendationDTO;
+import com.e106.reco.domain.artist.user.dto.node.InitialRecommendationProjection;
 import com.e106.reco.domain.artist.user.node.ArtistNode;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
@@ -112,7 +113,7 @@ public interface RecommendRepository extends Neo4jRepository<ArtistNode, Long> {
     ORDER BY totalScore DESC, name
     LIMIT $limit
     """)
-    List<InitialRecommendationDTO> findInitialRecommendations(
+    List<InitialRecommendationProjection> findInitialRecommendations(
             @Param("artistSeq") Long artistSeq,
             @Param("limit") int limit
     );
