@@ -10,12 +10,12 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class Neo4jConfig {
 
     @Bean
-    public TransactionTemplate transactionTemplate(Neo4jTransactionManager transactionManager) {
-        return new TransactionTemplate(transactionManager);
+    public TransactionTemplate neo4jTransactionTemplate(Neo4jTransactionManager neo4jTransactionManager) {
+        return new TransactionTemplate(neo4jTransactionManager);
     }
 
     @Bean
-    public Neo4jTransactionManager transactionManager(Driver driver) {
+    public Neo4jTransactionManager neo4jTransactionManager(Driver driver) {
         return new Neo4jTransactionManager(driver);
     }
 }
