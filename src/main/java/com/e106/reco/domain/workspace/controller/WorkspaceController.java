@@ -57,7 +57,7 @@ public class WorkspaceController {
         log.info("file = {}", file.getContentType());
         Long seq = workspaceService.createWorkspace(workspaceRequest);
         log.info("seq = {}", seq);
-        workspaceService.divide(workspaceRequest, file, stemList, splitter, seq)
+        workspaceService.processAudioFile(file, stemList, splitter, seq)
                 .thenAccept(results -> {
                     // FCM 알림 전송 등 모든 작업이 완료된 후의 처리
                     log.info("변환이 끝났습니다.");

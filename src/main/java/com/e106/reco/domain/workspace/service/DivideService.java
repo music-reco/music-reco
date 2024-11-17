@@ -42,8 +42,8 @@ public class DivideService {
 
     @Async(value = "asyncExecutor1")
     public CompletableFuture<AudioDivideResponse> divideAudioFile(
-            File file, String contentType, String stemValue, String splitterValue) {
-        log.info("Processing file: {} with contentType: {}", file.getName(), contentType);
+            File file, String stemValue, String splitterValue) {
+        log.info("Processing file: {}", file.getName());
 //        validateAudioFile(file, contentType);
         validateStemAndSplitter(stemValue, splitterValue);
 

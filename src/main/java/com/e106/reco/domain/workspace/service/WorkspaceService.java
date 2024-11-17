@@ -78,18 +78,20 @@ public class WorkspaceService {
     @Async(value = "asyncExecutor2")
     public CompletableFuture<List<AudioDivideResponse>> divide(WorkspaceRequest workspaceRequest,
                                                                MultipartFile file, List<String> stemList, String splitter, Long workspaceSeq) {
-        log.info("divide start...");
+
 
 //        Workspace workspace = Workspace.of(workspaceRequest, artistSeq);
 //        log.info("workspaceSeq = {}", workspace.getSeq());
         String contentType = file.getContentType();
         log.info("Original ContentType: {}", contentType);
 
-        return processAudioFile(file, contentType, stemList, splitter, workspaceSeq);
+        return processAudioFile(file, stemList, splitter, workspaceSeq);
     }
 
-    private CompletableFuture<List<AudioDivideResponse>> processAudioFile(
-            MultipartFile file, String contentType, List<String> stemList, String splitter, Long workspaceSeq) {
+    public CompletableFuture<List<AudioDivideResponse>> processAudioFile(
+            MultipartFile file, List<String> stemList, String splitter, Long workspaceSeq) {
+
+        log.info("divide start...");
         File tempDir = new File(tempPath);
         if (!tempDir.exists()) {
             tempDir.mkdirs();
@@ -117,7 +119,7 @@ public class WorkspaceService {
             final File audioFile = tempFile;
 
             List<CompletableFuture<AudioDivideResponse>> futures = stemList.stream()
-                    .map(stem -> divideService.divideAudioFile(audioFile, contentType, stem, splitter)
+                    .map(stem -> divideService.divideAudioFile(audioFile, stem, splitter)
                             .thenApply(response -> {
                                 log.info("음악 저장");
                                 log.info("soundSeq : {} ", Objects.requireNonNull(saveSound(response, workspaceSeq, stem)).getSeq());
