@@ -23,10 +23,10 @@ public class ArtistNode {
     private String name;
 
     @Relationship(type = "PLAYS_GENRE", direction = Relationship.Direction.OUTGOING)
-    private GenreNode genres;
+    private GenreNode genre;
 
     @Relationship(type = "PLAYS_INSTRUMENT", direction = Relationship.Direction.OUTGOING)
-    private InstrumentNode instruments;
+    private InstrumentNode instrument;
 
     @Relationship(type = "BASED_IN", direction = Relationship.Direction.OUTGOING)
     private RegionNode region;
