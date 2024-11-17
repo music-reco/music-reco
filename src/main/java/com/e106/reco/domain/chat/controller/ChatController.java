@@ -1,6 +1,5 @@
 package com.e106.reco.domain.chat.controller;
 
-import com.e106.reco.domain.chat.dto.RoomRequest;
 import com.e106.reco.domain.chat.dto.RoomResponse;
 import com.e106.reco.domain.chat.entity.Chat;
 import com.e106.reco.domain.chat.entity.ChatArtist;
@@ -9,7 +8,6 @@ import com.e106.reco.domain.chat.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,24 +25,24 @@ public class ChatController {
     private final ChatService chatService;
     private final ChatRepository chatRepository;
 
-    @PostMapping("/group")
-    public Long createGroupChatRoom(@RequestBody RoomRequest roomRequest) {
-        return chatService.createGroupChatRoom(roomRequest);
-    }
-    @PostMapping("/single")
-    public Long createSingleChatRoom(@RequestBody RoomRequest roomRequest) {
-        return chatService.createSingleChatRoom(roomRequest);
-    }
-    @PostMapping("/invite/{roomSeq}/{artistSeq}")
-    private void invite(@PathVariable("roomSeq") Long roomSeq, @PathVariable("artistSeq") Long artistSeq) {
-        chatService.invite(roomSeq, artistSeq);
-//        return
-    }
-    @DeleteMapping("/leave/{roomSeq}/{artistSeq}")
-    private void leave(@PathVariable("roomSeq") Long roomSeq, @PathVariable("artistSeq") Long artistSeq) {
-        chatService.leave(roomSeq, artistSeq);
-//        return
-    }
+//    @PostMapping("/group")
+//    public Long createGroupChatRoom(@RequestBody RoomRequest roomRequest) {
+//        return chatService.createGroupChatRoom(roomRequest);
+//    }
+//    @PostMapping("/single")
+//    public Long createSingleChatRoom(@RequestBody RoomRequest roomRequest) {
+//        return chatService.createSingleChatRoom(roomRequest);
+//    }
+//    @PostMapping("/invite/{roomSeq}/{artistSeq}")
+//    private void invite(@PathVariable("roomSeq") Long roomSeq, @PathVariable("artistSeq") Long artistSeq) {
+//        chatService.invite(roomSeq, artistSeq);
+////        return
+//    }
+//    @DeleteMapping("/leave/{roomSeq}/{artistSeq}")
+//    private void leave(@PathVariable("roomSeq") Long roomSeq, @PathVariable("artistSeq") Long artistSeq) {
+//        chatService.leave(roomSeq, artistSeq);
+////        return
+//    }
 
     @PostMapping("/webflux")
     public Mono<Chat> postMsg(@RequestBody Chat chat) {
