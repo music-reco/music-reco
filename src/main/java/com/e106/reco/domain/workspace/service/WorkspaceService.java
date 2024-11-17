@@ -32,6 +32,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -66,17 +67,18 @@ public class WorkspaceService {
 
         return workspaceRepository.save(workspace).getSeq();
     }
-
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Workspace createWorkspace(WorkspaceRequest workspaceRequest, Long artistSeq) {
+        Workspace w = Workspace.of(workspaceRequest, artistSeq);
+        return workspaceRepository.save(w);
+    }
     @Async(value = "asyncExecutor2")
     public CompletableFuture<List<AudioDivideResponse>> divide(WorkspaceRequest workspaceRequest,
                                                                MultipartFile file, List<String> stemList, String splitter) {
         log.info("divide start...");
         Long artistSeq = AuthUtil.getCustomUserDetails().getSeq();
-        Workspace w = Workspace.of(workspaceRequest, artistSeq);
-        Workspace workspace = workspaceRepository.save(w);
-        log.info("w워크스페이스 생성 했다? : {}", w.getSeq());
-        log.info("workspace워크스페이스 생성 했다? : {}", workspace.getSeq());
-//        log.info();
+        Workspace workspace = createWorkspace(workspaceRequest, artistSeq);
+        log.info("workspaceSeq = {}", workspace.getSeq());
         String contentType = file.getContentType();
         log.info("Original ContentType: {}", contentType);
 
