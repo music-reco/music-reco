@@ -14,7 +14,7 @@ public interface FamilyTreeRepository extends JpaRepository<FamilyTree, Long> {
             "JOIN FETCH f.parentWorkspace p " +
             "JOIN FETCH f.childWorkspace c " +
             "JOIN FETCH p.artist a " +
-            "WHERE f.childWorkspace = :workspaceSeq " +
+            "WHERE f.childWorkspace.seq = :workspaceSeq " +
             "ORDER BY f.createdAt")
     List<FamilyTree> findAllByPk_ChildWorkspaceSeqOrderByCreatedAt(Long workspaceSeq);
 }
