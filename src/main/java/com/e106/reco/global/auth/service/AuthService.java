@@ -94,6 +94,36 @@ public class AuthService implements UserDetailsService, ReactiveUserDetailsServi
                 .build());
     }
 
+    @Transactional(transactionManager = "neo4jTransactionManager")
+    public CommonResponse graphJoin(JoinDto joinDto, Long artistSeq){
+
+        // 그래프 시작.
+        RegionNode region = regionRepository.findByName(joinDto.getRegion())
+                .orElseGet(() -> regionRepository.save(RegionNode.builder()
+                        .name(joinDto.getRegion())
+                        .build()));
+
+        // 2. Genre 처리
+        GenreNode genre = genreRepository.findByName(joinDto.getGenre())
+                .orElseGet(() -> genreRepository.save(new GenreNode(null, joinDto.getGenre())));
+
+        // 3. Instrument 처리
+        InstrumentNode instruments = instrumentRepository.findByName(joinDto.getPosition())
+                .orElseGet(() -> instrumentRepository.save(new InstrumentNode(null, joinDto.getPosition())));
+
+        // 4. Artist 생성 및 관계 설정
+        ArtistNode artist = new ArtistNode();
+//        artist.setId(userSeq);
+        artist.setArtistSeq(artistSeq);
+        artist.setName(joinDto.getName());
+        artist.setRegion(region);
+        artist.setGenre(genre);
+        artist.setInstrument(instruments);
+
+        recommendRepository.save(artist);
+        return new CommonResponse("ok");
+    }
+
     public CommonResponse join(JoinDto joinDto, MultipartFile file) {
         String email = joinDto.getEmail();
 
