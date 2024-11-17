@@ -70,7 +70,7 @@ public class WorkspaceService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Workspace createWorkspace(WorkspaceRequest workspaceRequest, Long artistSeq) {
         Workspace w = Workspace.of(workspaceRequest, artistSeq);
-        return workspaceRepository.save(w);
+        return workspaceRepository.saveAndFlush(w);
     }
     @Async(value = "asyncExecutor2")
     public CompletableFuture<List<AudioDivideResponse>> divide(WorkspaceRequest workspaceRequest,
