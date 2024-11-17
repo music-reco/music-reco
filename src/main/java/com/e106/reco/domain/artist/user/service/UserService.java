@@ -54,7 +54,7 @@ public class UserService {
 
         joinDto.setProfileImage(file == null ? configProfile : s3FileService.uploadFile(file));
         User.of(user, joinDto);
-        chatArtistRedisRepository.createChatUser(user);
+//        chatArtistRedisRepository.createChatUser(user);
         chatArtistMongoRepository.save(ChatArtist.of(user));
         return getUserInfo(user);
     }

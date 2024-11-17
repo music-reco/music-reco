@@ -18,27 +18,38 @@ import java.time.LocalDateTime;
 public class ChatArtist {
 
     @Id
-    private String artistSeq;
+    private String seq;
+
+    private Long artistSeq;
+    private Long roomSeq;
 
     private String nickname;
     private String profilePicUrl;
-    private String joinAt;
-    private String roomSeq;
+    private LocalDateTime joinAt;
+
+    public ChatArtist join(LocalDateTime joinAt){
+        this.joinAt = joinAt;
+        return this;
+    }
+    public void leave(){
+        this.joinAt = null;
+    }
 
     public static ChatArtist of(Artist artist) {
         return ChatArtist.builder()
-                .artistSeq(artist.getSeq().toString())
+                .artistSeq(artist.getSeq())
                 .profilePicUrl(artist.getProfileImage())
                 .nickname(artist.getNickname())
                 .build();
     }
 
-    public static ChatArtist of(Artist artist, LocalDateTime joinAt) {
+    public static ChatArtist of(Artist artist, Long roomSeq, LocalDateTime joinAt) {
         return ChatArtist.builder()
-                .artistSeq(artist.getSeq().toString())
+                .artistSeq(artist.getSeq())
+                .roomSeq(roomSeq)
                 .profilePicUrl(artist.getProfileImage())
                 .nickname(artist.getNickname())
-                .joinAt(joinAt.toString())
+                .joinAt(joinAt)
                 .build();
     }
 }

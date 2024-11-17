@@ -192,7 +192,7 @@ public class CrewService {
         crewDto.setProfileImage(file==null ? configProfile : s3FileService.uploadFile(file));
         Crew.of(crew, crewDto);
         chatArtistMongoRepository.save(ChatArtist.of(crew));
-        chatArtistRedisRepository.createChatUser(crew);
+//        chatArtistRedisRepository.createChatUser(crew);
         crewRepository.save(crew);
         return new CommonResponse("크루 업데이트 완료");
     }

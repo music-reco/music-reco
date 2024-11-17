@@ -64,9 +64,9 @@ public class ChatRoom {
         if(this.state.equals(RoomState.ACTIVE)) this.state = RoomState.INACTIVE;
         this.joinAt = null;
     }
-    public void joinChatRoom() {
+    public void joinChatRoom(LocalDateTime joinAt) {
         if(this.state.equals(RoomState.INACTIVE)) this.state = RoomState.ACTIVE;
-        this.joinAt = LocalDateTime.now();
+        this.joinAt = joinAt;
     }
     public void updateLastActiveAt() {
         this.lastActiveAt = LocalDateTime.now();

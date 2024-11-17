@@ -11,11 +11,13 @@ import com.e106.reco.domain.chat.dto.ChatRoomResponse;
 import com.e106.reco.domain.chat.dto.RoomRequest;
 import com.e106.reco.domain.chat.dto.RoomResponse;
 import com.e106.reco.domain.chat.entity.Chat;
+import com.e106.reco.domain.chat.entity.ChatArtist;
 import com.e106.reco.domain.chat.entity.ChatRoom;
 import com.e106.reco.domain.chat.entity.Room;
 import com.e106.reco.domain.chat.entity.RoomState;
+import com.e106.reco.domain.chat.repository.ChatArtistMongoRepository;
 import com.e106.reco.domain.chat.repository.ChatArtistRedisRepository;
-import com.e106.reco.domain.chat.repository.ChatArtistStateRepository;
+//import com.e106.reco.domain.chat.repository.ChatArtistStateRepository;
 import com.e106.reco.domain.chat.repository.ChatRepository;
 import com.e106.reco.domain.chat.repository.ChatRoomRepository;
 import com.e106.reco.domain.chat.repository.RoomRepository;
@@ -54,7 +56,8 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final CrewUserRepository crewUserRepository;
     private final ChatArtistRedisRepository chatArtistRedisRepository;
-    private final ChatArtistStateRepository chatArtistStateRepository;
+//    private final ChatArtistStateRepository chatArtistStateRepository;
+    private final ChatArtistMongoRepository chatArtistMongoRepository;
 
 //    public Flux<Chat> getMsg(Long artistSeq, String roomSeq){
 //        chatArtistRepository.c
@@ -121,11 +124,13 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
 
         ChatRoom chatRoom = chatRoomRepository.findByPk(ChatRoom.PK.builder().roomSeq(roomSeq).artistSeq(artistSeq).build())
                 .orElseThrow(() -> new BusinessException(ROOM_NOT_FOUND));
-
-        if(chatRoom.getState() == RoomState.INACTIVE)
+        ChatArtist chatArtist = chatArtistMongoRepository.findByArtistSeqAndRoomSeq(artistSeq, roomSeq).block();
+        if(chatRoom.getState() == RoomState.INACTIVE || Objects.isNull(chatArtist) || Objects.isNull(chatArtist.getJoinAt()))
             throw new BusinessException(ARTIST_NOT_IN_CHAT);
 
         chatRoom.leaveChatRoom();
+        chatArtist.leave();
+        chatArtistMongoRepository.save(chatArtist).block();
     }
     public void invite(Long roomSeq, Long artistSeq){
         CustomUserDetails customUserDetails = AuthUtil.getCustomUserDetails();
@@ -139,6 +144,7 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
 
         if(artist.getPosition().equals(Position.CREW)) throw new BusinessException(CHAT_NOT_ALLOW_GROUP_CHAT);
 
+        LocalDateTime joinTime = LocalDateTime.now();
         if(chatRoomRepository.countByRoom(room)==2) {
             List<Long> receivers = chatRoomRepository.artistSeqFindByRoomSeq(roomSeq);
             Long newRoomSeq = createGroupChatRoom(RoomRequest.builder()
@@ -147,17 +153,32 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
                     .build());
             room = roomRepository.findBySeq(newRoomSeq)
                     .orElseThrow(() -> new BusinessException(ROOM_NOT_FOUND));
+            joinTime = chatRoomRepository.findJoinTimeByPk(ChatRoom.PK.builder().roomSeq(newRoomSeq).artistSeq(receivers.getFirst()).build())
+                    .orElse(LocalDateTime.now());
         }
 
         ChatRoom chatRoom = chatRoomRepository.findByPk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(artistSeq).build())
-                .orElse(ChatRoom.builder().room(room)
-                                        .artist(artist)
-                                        .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(artistSeq).build())
-                        .build());
+                .orElse(null);
 
-        chatRoom.joinChatRoom();
-        chatArtistStateRepository.createJoinChatUserState(artistSeq, roomSeq);
+        if(Objects.isNull(chatRoom))
+            ChatRoom.builder()
+                .room(room)
+                .artist(artist)
+                .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(artistSeq).build())
+                .joinAt(joinTime)
+                .build();
+        if (Objects.isNull(chatRoom.getJoinAt())) chatRoom.joinChatRoom(joinTime);
+
+        ChatArtist chatArtist = chatArtistMongoRepository.findByArtistSeqAndRoomSeq(artistSeq, roomSeq).block();
+        if(Objects.isNull(chatArtist)) ChatArtist.of(artist, roomSeq, joinTime);
+        else if(Objects.isNull(chatArtist.getJoinAt())) chatArtist.join(joinTime);
+
+
+//        chatRoom.joinChatRoom();
+
+//        chatArtistStateRepository.createJoinChatUserState(artistSeq, roomSeq);
         chatRoomRepository.save(chatRoom);
+        chatArtistMongoRepository.save(chatArtist).block();
     }
     public Mono<Chat> sendMsg(Chat chat){
         Artist artist = artistRepository.findBySeq(Long.parseLong(chat.getArtistSeq()))
@@ -172,42 +193,52 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
 
         if(roomRequest.getReceiversSeq()==null || roomRequest.getReceiversSeq().size()!=1) throw new BusinessException(SINGLE_CHAT_ONLY_ONE_RECEIVER);
 
-
         Artist sender = artistRepository.findBySeq(roomRequest.getSenderSeq())
                         .orElseThrow(()-> new BusinessException(ARTIST_NOT_FOUND));
         artistCertification(user.getSeq(), sender);
         Artist receiver = artistRepository.findBySeq(roomRequest.getReceiversSeq().getFirst())
                         .orElseThrow(()-> new BusinessException(ARTIST_NOT_FOUND));
 
+        LocalDateTime joinTime = LocalDateTime.now();
         Room room = chatRoomRepository.findPersonalChatRoomBetweenArtists(roomRequest.getSenderSeq(), roomRequest.getReceiversSeq().getFirst())
-                .orElse(roomRepository.save(Room.builder().build()));
+                .orElse(null);
+        if(Objects.isNull(room)) room = roomRepository.save(Room.builder().build());
 
         ChatRoom senderRoom = chatRoomRepository.findByPk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(sender.getSeq()).build())
-                .orElse(chatRoomRepository.save(ChatRoom.builder()
-                        .artist(sender)
-                        .room(room)
-                        .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(sender.getSeq()).build())
-                        .state(RoomState.PERSONAL)
-                        .build())
-                );
-        if(Objects.isNull(senderRoom.getJoinAt())) {
-            senderRoom.joinChatRoom();
-            chatArtistStateRepository.createJoinChatUserState(sender.getSeq(), room.getSeq());
-        }
+                .orElse(null);
+
+        if(Objects.isNull(senderRoom))
+            chatRoomRepository.save(ChatRoom.builder()
+                .artist(sender)
+                .room(room)
+                .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(sender.getSeq()).build())
+                .joinAt(joinTime)
+                .state(RoomState.PERSONAL)
+                .build());
+        if(Objects.isNull(senderRoom.getJoinAt())) senderRoom.joinChatRoom(joinTime);
+
+        ChatArtist senderArtist = chatArtistMongoRepository.findByArtistSeqAndRoomSeq(sender.getSeq(), room.getSeq()).block();
+        if(Objects.isNull(senderArtist)) senderArtist = ChatArtist.of(sender, room.getSeq(), joinTime);
+        else if(Objects.isNull(senderArtist.getJoinAt())) senderArtist.join(joinTime);
+
+        chatArtistMongoRepository.save(senderArtist).block();
+
 
         ChatRoom receiverRoom = chatRoomRepository.findByPk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(receiver.getSeq()).build())
-                .orElse(chatRoomRepository.save(ChatRoom.builder()
-                        .artist(receiver)
-                        .room(room)
-                        .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(receiver.getSeq()).build())
-                        .state(RoomState.PERSONAL)
-                        .build())
-                );
+                .orElse(null);
 
-        if(Objects.isNull(receiverRoom.getJoinAt())) {
-            receiverRoom.joinChatRoom();
-            chatArtistStateRepository.createJoinChatUserState(receiver.getSeq(), room.getSeq());
-        }
+        if(Objects.isNull(receiverRoom)) chatRoomRepository.save(ChatRoom.builder()
+                .artist(receiver)
+                .room(room)
+                .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(receiver.getSeq()).build())
+                .state(RoomState.PERSONAL)
+                .build());
+        if(Objects.isNull(receiverRoom.getJoinAt())) receiverRoom.joinChatRoom(joinTime);
+
+        ChatArtist receiverArtist = chatArtistMongoRepository.findByArtistSeqAndRoomSeq(receiver.getSeq(), room.getSeq()).block();
+        if(Objects.isNull(receiverArtist)) receiverArtist = ChatArtist.of(receiver, room.getSeq(), joinTime);
+        else if(Objects.isNull(senderArtist.getJoinAt())) receiverArtist.join(joinTime);
+        chatArtistMongoRepository.save(receiverArtist).block();
 
         return room.getSeq();
     }
@@ -219,6 +250,7 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
         artistCertification(user.getSeq(), sender);
 
         Room room = roomRepository.save(Room.builder().build());
+        LocalDateTime joinTime = LocalDateTime.now();
 
         List<ChatRoom> chatRooms = new ArrayList<>(Arrays.asList(
                 ChatRoom.builder()
@@ -228,6 +260,9 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
                 .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(sender.getSeq()).build())
                 .state(RoomState.ACTIVE)
                 .build()));
+        List<ChatArtist> chatArtists = new ArrayList<>(Arrays.asList(
+                ChatArtist.of(sender, room.getSeq(), joinTime)
+        ));
         for(Long receiver : roomRequest.getReceiversSeq()){
             Artist artist = artistRepository.findBySeq(receiver)
                     .orElseThrow(()->new BusinessException(ARTIST_NOT_FOUND));
@@ -239,8 +274,10 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
                             .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(artist.getSeq()).build())
                             .state(RoomState.ACTIVE)
                             .build());
+            chatArtists.add(ChatArtist.of(artist, room.getSeq(), joinTime));
         }
         chatRoomRepository.saveAll(chatRooms);
+        chatArtistMongoRepository.saveAll(chatArtists);
         return room.getSeq();
     }
 
