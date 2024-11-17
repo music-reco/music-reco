@@ -27,6 +27,8 @@ public class RecommendService {
         return recommendRepository.findInitialRecommendations(artistSeq, limit).stream()
                         .map(projection -> {
                             Long seq = projection.getArtistSeq();
+                            log.info("seq : {}", projection.getArtistSeq());
+                            log.info("name : {}", projection.getName());
                             Artist artist = artistRepository.findById(seq).orElse(null);
                             assert artist != null;
                             return convertToDTO(projection, artist.getProfileImage());
