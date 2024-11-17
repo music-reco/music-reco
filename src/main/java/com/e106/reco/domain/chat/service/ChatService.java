@@ -161,13 +161,13 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
                 .orElse(null);
 
         if(Objects.isNull(chatRoom))
-            ChatRoom.builder()
+            chatRoom = ChatRoom.builder()
                 .room(room)
                 .artist(artist)
                 .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(artistSeq).build())
                 .joinAt(joinTime)
                 .build();
-        if (Objects.isNull(chatRoom.getJoinAt())) chatRoom.joinChatRoom(joinTime);
+        else if (Objects.isNull(chatRoom.getJoinAt())) chatRoom.joinChatRoom(joinTime);
 
         ChatArtist chatArtist = chatArtistMongoRepository.findByArtistSeqAndRoomSeq(artistSeq, roomSeq).block();
         if(Objects.isNull(chatArtist)) ChatArtist.of(artist, roomSeq, joinTime);
@@ -208,14 +208,14 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
                 .orElse(null);
 
         if(Objects.isNull(senderRoom))
-            chatRoomRepository.save(ChatRoom.builder()
+            senderRoom = chatRoomRepository.save(ChatRoom.builder()
                 .artist(sender)
                 .room(room)
                 .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(sender.getSeq()).build())
                 .joinAt(joinTime)
                 .state(RoomState.PERSONAL)
                 .build());
-        if(Objects.isNull(senderRoom.getJoinAt())) senderRoom.joinChatRoom(joinTime);
+        else if(Objects.isNull(senderRoom.getJoinAt())) senderRoom.joinChatRoom(joinTime);
 
         ChatArtist senderArtist = chatArtistMongoRepository.findByArtistSeqAndRoomSeq(sender.getSeq(), room.getSeq()).block();
         if(Objects.isNull(senderArtist)) senderArtist = ChatArtist.of(sender, room.getSeq(), joinTime);
@@ -233,7 +233,7 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
                 .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(receiver.getSeq()).build())
                 .state(RoomState.PERSONAL)
                 .build());
-        if(Objects.isNull(receiverRoom.getJoinAt())) receiverRoom.joinChatRoom(joinTime);
+        else if(Objects.isNull(receiverRoom.getJoinAt())) receiverRoom.joinChatRoom(joinTime);
 
         ChatArtist receiverArtist = chatArtistMongoRepository.findByArtistSeqAndRoomSeq(receiver.getSeq(), room.getSeq()).block();
         if(Objects.isNull(receiverArtist)) receiverArtist = ChatArtist.of(receiver, room.getSeq(), joinTime);
