@@ -47,7 +47,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
+@Transactional("transactionManager")
 @RequiredArgsConstructor
 @Slf4j
 public class WorkspaceService {
