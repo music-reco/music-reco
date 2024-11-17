@@ -120,7 +120,7 @@ public class WorkspaceService {
                     .map(stem -> divideService.divideAudioFile(audioFile, contentType, stem, splitter)
                             .thenApply(response -> {
                                 log.info("음악 저장");
-                                saveSound(response, workspaceSeq, stem);
+                                log.info("soundSeq : {} ", Objects.requireNonNull(saveSound(response, workspaceSeq, stem)).getSeq());
                                 return response;
                             })
                             .exceptionally(ex -> {
@@ -130,6 +130,7 @@ public class WorkspaceService {
                     .toList();
 
             File finalTempFile = tempFile;
+
             return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
                     .thenApply(v -> futures.stream()
                             .map(CompletableFuture::join)
@@ -366,7 +367,7 @@ public class WorkspaceService {
                 .build();
     }
 
-    private void saveSound(AudioDivideResponse response, Long workspaceSeq, String stemType) {
+    private Sound saveSound(AudioDivideResponse response, Long workspaceSeq, String stemType) {
         // stemTrack 저장
         if (response.getStemTrackUrl() != null) {
             Sound stemTrack = Sound.builder()
@@ -378,8 +379,9 @@ public class WorkspaceService {
                     .startPoint(0d)
                     .endPoint(response.getDuration())
                     .build();
-            soundRepository.save(stemTrack);
+            return soundRepository.save(stemTrack);
         }
+        return null;
     }
 
     // 주기적으로 임시 파일 정리
