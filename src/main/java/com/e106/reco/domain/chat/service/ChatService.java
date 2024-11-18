@@ -70,27 +70,27 @@ public class ChatService {
 
 
     }
-    public Mono<Void> invite(Long artistSeq, Long roomSeq) {
+    public Mono<Void> invite(Long sendSeq, Long roomSeq) {
         LocalDateTime joinTime = LocalDateTime.now();
 
         // Room과 Artist 조회를 병렬로 실행
         return Mono.zip(
                 Mono.just(roomRepository.findBySeq(roomSeq)
                         .orElseThrow(() -> new BusinessException(ROOM_NOT_FOUND))),
-                Mono.just(artistRepository.findBySeq(artistSeq)
+                Mono.just(artistRepository.findBySeq(sendSeq)
                         .orElseThrow(() -> new BusinessException(ARTIST_NOT_FOUND)))
         ).flatMap(tuple -> {
             Room room = tuple.getT1();
-            Artist artist = chatRoomRepository.artistFindByRoomSeqWithoutMe(roomSeq, artistSeq).getFirst();
-
+            Artist artist = chatRoomRepository.artistFindByRoomSeqWithoutMe(roomSeq, sendSeq).getFirst();
+            Long receiverSeq = artist.getSeq();
             // ChatRoom과 ChatArtist 조회를 병렬로 실행
             return Mono.zip(
                     Mono.just(chatRoomRepository.findByPk(ChatRoom.PK.builder()
                                     .roomSeq(roomSeq)
-                                    .artistSeq(artistSeq)
+                                    .artistSeq(receiverSeq)
                                     .build())
                             .orElse(null)),
-                    chatArtistMongoRepository.findByArtistSeqAndRoomSeq(artistSeq, roomSeq)
+                    chatArtistMongoRepository.findByArtistSeqAndRoomSeq(receiverSeq, roomSeq)
                             .switchIfEmpty(Mono.empty())
             ).flatMap(innerTuple -> {
                 ChatRoom chatRoom = innerTuple.getT1();
@@ -102,7 +102,7 @@ public class ChatService {
                             .artist(artist)
                             .pk(ChatRoom.PK.builder()
                                     .roomSeq(roomSeq)
-                                    .artistSeq(artistSeq)
+                                    .artistSeq(sendSeq)
                                     .build())
                             .joinAt(joinTime)
                             .build();
