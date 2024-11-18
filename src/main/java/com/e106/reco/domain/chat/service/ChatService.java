@@ -331,9 +331,15 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
         Criteria criteria = where("roomSeq").is(roomSeq);
 
         // 먼저, 해당 roomSeq에 대한 모든 ChatArtist를 반환
-        Flux<ChatArtist> chatArtists = Flux.fromIterable(chatRoomRepository.artistFindByRoomSeqWithoutMe(roomSeq, AuthUtil.getWebfluxCustomUserDetails().block().getSeq())
-                .stream().map(artist -> ChatArtist.of(artist)).toList());
-
+        Flux<ChatArtist> chatArtists = AuthUtil.getWebfluxCustomUserDetails()
+                        .flatMapMany(user -> {
+                            // user의 seq 값을 이용해 chatRoomRepository에서 ChatArtist 목록을 가져옵니다
+                            List<ChatArtist> artists = chatRoomRepository.artistFindByRoomSeqWithoutMe(roomSeq, user.getSeq())
+                                    .stream()
+                                    .map(artist -> ChatArtist.of(artist)) // 변환 작업
+                                    .toList();
+                            return Flux.fromIterable(artists); // Flux로 변환하여 반환
+                        });
 
         // Change Stream을 활용해 변경사항 스트리밍
         Flux<ChatArtist> changeStream = Flux.create(sink -> {
