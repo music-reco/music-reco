@@ -21,3 +21,5 @@ spring:
     authentication:
       username: neo4j
       password: O2TxuKNhWqOcpfD1mBwtuqDgOjL6lcyN3osgzuUSiTo
+  jackson:
+    default-property-inclusion: always

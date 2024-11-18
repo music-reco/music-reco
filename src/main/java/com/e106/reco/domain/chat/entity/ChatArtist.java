@@ -1,6 +1,7 @@
 package com.e106.reco.domain.chat.entity;
 
 import com.e106.reco.domain.artist.entity.Artist;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,6 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
+@JsonInclude(JsonInclude.Include.ALWAYS)
 @Data
 @SuperBuilder
 @NoArgsConstructor
