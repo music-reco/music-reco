@@ -111,8 +111,13 @@ public class ChatService {
                     chatArtist.leave();
                     chatRoom.leaveChatRoom();
 
+                    log.info("나간녀석 다시 강조 확인");
+
                     chatArtist.join(joinTime);
                     chatRoom.joinChatRoom(joinTime);
+
+                    log.info("나간녀석 초대 확인");
+
                 }
 
                 // ChatRoom과 ChatArtist 저장을 병렬로 실행
