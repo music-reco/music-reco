@@ -7,9 +7,7 @@ import com.e106.reco.domain.artist.entity.Artist;
 import com.e106.reco.domain.artist.entity.Position;
 import com.e106.reco.domain.artist.repository.ArtistRepository;
 import com.e106.reco.domain.artist.user.dto.CustomUserDetails;
-import com.e106.reco.domain.chat.dto.ChatRoomResponse;
 import com.e106.reco.domain.chat.dto.RoomRequest;
-import com.e106.reco.domain.chat.dto.RoomResponse;
 import com.e106.reco.domain.chat.entity.Chat;
 import com.e106.reco.domain.chat.entity.ChatArtist;
 import com.e106.reco.domain.chat.entity.ChatRoom;
@@ -17,7 +15,6 @@ import com.e106.reco.domain.chat.entity.Room;
 import com.e106.reco.domain.chat.entity.RoomState;
 import com.e106.reco.domain.chat.repository.ChatArtistMongoRepository;
 import com.e106.reco.domain.chat.repository.ChatArtistRedisRepository;
-//import com.e106.reco.domain.chat.repository.ChatArtistStateRepository;
 import com.e106.reco.domain.chat.repository.ChatRepository;
 import com.e106.reco.domain.chat.repository.ChatRoomRepository;
 import com.e106.reco.domain.chat.repository.RoomRepository;
@@ -28,7 +25,6 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -74,34 +70,34 @@ public class ChatService {
 //                )
 //                .collectList(); // Mono<List<ChatArtist>>로 변환
 //    }
-public Flux<RoomResponse> getChatRooms(Long artistSeq) {
-    Artist artist = artistRepository.findBySeq(artistSeq)
-            .orElseThrow(() -> new BusinessException(ARTIST_NOT_FOUND));
-
-    // 인증을 수행하지만, subscribe()를 하므로 비동기적 처리임에 유의
-    AuthUtil.getWebfluxCustomUserDetails()
-            .subscribe(user -> artistCertification(user.getSeq(), artist));
-
-    // 방 목록을 비동기 Flux로 변환
-    List<Room> rooms = chatRoomRepository.findExistRoomsByArtistSeq(artistSeq);
-
-    rooms.stream().forEach(room -> log.info("rooms: {}", room.getSeq()));
-
-    return Flux.fromIterable(rooms)
-            .flatMap(room -> chatRepository.findTopByRoomSeqOrderByCreatedAtDesc(room.getSeq().toString())
-                    .map(lastChat -> RoomResponse.builder()
-                            .roomSeq(room.getSeq())
-                            .lastMsg(lastChat != null ? lastChat.getMsg() : "No messages yet")
-                            .lastMsgTime(lastChat != null ? lastChat.getCreatedAt() : null)
-                            .chatRoomResponses(chatRoomRepository.findExistNameRoomsByRoomSeq(room.getSeq())
-                                    .stream()
-                                    .map(ChatRoomResponse::of)
-                                    .toList()
-                            )
-                            .build()
-                    )
-            );
-}
+//public Flux<RoomResponse> getChatRooms(Long artistSeq) {
+//    Artist artist = artistRepository.findBySeq(artistSeq)
+//            .orElseThrow(() -> new BusinessException(ARTIST_NOT_FOUND));
+//
+//    // 인증을 수행하지만, subscribe()를 하므로 비동기적 처리임에 유의
+//    AuthUtil.getWebfluxCustomUserDetails()
+//            .subscribe(user -> artistCertification(user.getSeq(), artist));
+//
+//    // 방 목록을 비동기 Flux로 변환
+//    List<Room> rooms = chatRoomRepository.findExistRoomsByArtistSeq(artistSeq);
+//
+//    rooms.stream().forEach(room -> log.info("rooms: {}", room.getSeq()));
+//
+//    return Flux.fromIterable(rooms)
+//            .flatMap(room -> chatRepository.findTopByRoomSeqOrderByCreatedAtDesc(room.getSeq().toString())
+//                    .map(lastChat -> RoomResponse.builder()
+//                            .roomSeq(room.getSeq())
+//                            .lastMsg(lastChat != null ? lastChat.getMsg() : "No messages yet")
+//                            .lastMsgTime(lastChat != null ? lastChat.getCreatedAt() : null)
+//                            .chatRoomResponses(chatRoomRepository.findExistNameRoomsByRoomSeq(room.getSeq())
+//                                    .stream()
+//                                    .map(ChatRoomResponse::of)
+//                                    .toList()
+//                            )
+//                            .build()
+//                    )
+//            );
+//}
 
 
 //    public Flux<ChatArtist> getArtistInfo(Long roomSeq) {
