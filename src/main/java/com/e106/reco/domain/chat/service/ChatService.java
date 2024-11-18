@@ -70,41 +70,91 @@ public class ChatService {
 
 
     }
-
-    public void invite(Long artistSeq, Long roomSeq){
-        Room room = roomRepository.findBySeq(roomSeq).orElseThrow(() -> new BusinessException(ROOM_NOT_FOUND));
-
-        Artist artist = artistRepository.findBySeq(artistSeq)
-                .orElseThrow(() -> new BusinessException(ARTIST_NOT_FOUND));
-
+    public Mono<Void> invite(Long artistSeq, Long roomSeq) {
         LocalDateTime joinTime = LocalDateTime.now();
 
-        ChatRoom chatRoom = chatRoomRepository.findByPk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(artistSeq).build())
-                .orElse(null);
+        // Room과 Artist 조회를 병렬로 실행
+        return Mono.zip(
+                Mono.just(roomRepository.findBySeq(roomSeq)
+                        .orElseThrow(() -> new BusinessException(ROOM_NOT_FOUND))),
+                Mono.just(artistRepository.findBySeq(artistSeq)
+                        .orElseThrow(() -> new BusinessException(ARTIST_NOT_FOUND)))
+        ).flatMap(tuple -> {
+            Room room = tuple.getT1();
+            Artist artist = tuple.getT2();
 
-//        ChatArtist chatArtist = chatArtistMongoRepository.findByArtistSeqAndRoomSeq(artistSeq, roomSeq)
-//                .switchIfEmpty(null)
-//                .block();
-        // 수정한 부분
-        ChatArtist chatArtist = chatArtistMongoRepository.findByArtistSeqAndRoomSeq(artistSeq, roomSeq)
-                .switchIfEmpty(Mono.empty())  // null 대신 Mono.empty() 사용
-                .block();
+            // ChatRoom과 ChatArtist 조회를 병렬로 실행
+            return Mono.zip(
+                    Mono.just(chatRoomRepository.findByPk(ChatRoom.PK.builder()
+                                    .roomSeq(room.getSeq())
+                                    .artistSeq(artistSeq)
+                                    .build())
+                            .orElse(null)),
+                    chatArtistMongoRepository.findByArtistSeqAndRoomSeq(artistSeq, roomSeq)
+                            .switchIfEmpty(Mono.empty())
+            ).flatMap(innerTuple -> {
+                ChatRoom chatRoom = innerTuple.getT1();
+                ChatArtist chatArtist = innerTuple.getT2();
 
-        if(Objects.isNull(chatRoom) || Objects.isNull(chatArtist)) {
-            chatRoom = ChatRoom.builder()
-                    .room(room)
-                    .artist(artist)
-                    .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(artistSeq).build())
-                    .joinAt(joinTime)
-                    .build();
-            chatArtist = ChatArtist.of(artist, roomSeq, joinTime);
-        }else if (Objects.isNull(chatRoom.getJoinAt()) || Objects.isNull(chatArtist.getJoinAt())){
-            chatArtist.join(joinTime);
-            chatRoom.joinChatRoom(joinTime);
-        }
-        chatRoomRepository.save(chatRoom);
-        chatArtistMongoRepository.save(chatArtist).block();
+                if (Objects.isNull(chatRoom) || Objects.isNull(chatArtist)) {
+                    chatRoom = ChatRoom.builder()
+                            .room(room)
+                            .artist(artist)
+                            .pk(ChatRoom.PK.builder()
+                                    .roomSeq(room.getSeq())
+                                    .artistSeq(artistSeq)
+                                    .build())
+                            .joinAt(joinTime)
+                            .build();
+                    chatArtist = ChatArtist.of(artist, roomSeq, joinTime);
+                } else if (Objects.isNull(chatRoom.getJoinAt()) || Objects.isNull(chatArtist.getJoinAt())) {
+                    chatArtist.join(joinTime);
+                    chatRoom.joinChatRoom(joinTime);
+                }
+
+                // ChatRoom과 ChatArtist 저장을 병렬로 실행
+                return Mono.zip(
+                        Mono.just(chatRoomRepository.save(chatRoom)),
+                        chatArtistMongoRepository.save(chatArtist)
+                ).then();
+            });
+        });
     }
+
+//    public void invite(Long artistSeq, Long roomSeq){
+//        Room room = roomRepository.findBySeq(roomSeq).orElseThrow(() -> new BusinessException(ROOM_NOT_FOUND));
+//
+//        Artist artist = artistRepository.findBySeq(artistSeq)
+//                .orElseThrow(() -> new BusinessException(ARTIST_NOT_FOUND));
+//
+//        LocalDateTime joinTime = LocalDateTime.now();
+//
+//        ChatRoom chatRoom = chatRoomRepository.findByPk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(artistSeq).build())
+//                .orElse(null);
+//
+////        ChatArtist chatArtist = chatArtistMongoRepository.findByArtistSeqAndRoomSeq(artistSeq, roomSeq)
+////                .switchIfEmpty(null)
+////                .block();
+//        // 수정한 부분
+//        ChatArtist chatArtist = chatArtistMongoRepository.findByArtistSeqAndRoomSeq(artistSeq, roomSeq)
+//                .switchIfEmpty(Mono.empty())  // null 대신 Mono.empty() 사용
+//                .block();
+//
+//        if(Objects.isNull(chatRoom) || Objects.isNull(chatArtist)) {
+//            chatRoom = ChatRoom.builder()
+//                    .room(room)
+//                    .artist(artist)
+//                    .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(artistSeq).build())
+//                    .joinAt(joinTime)
+//                    .build();
+//            chatArtist = ChatArtist.of(artist, roomSeq, joinTime);
+//        }else if (Objects.isNull(chatRoom.getJoinAt()) || Objects.isNull(chatArtist.getJoinAt())){
+//            chatArtist.join(joinTime);
+//            chatRoom.joinChatRoom(joinTime);
+//        }
+//        chatRoomRepository.save(chatRoom);
+//        chatArtistMongoRepository.save(chatArtist).block();
+//    }
 public Flux<RoomResponse> getChatRooms(Long artistSeq) {
     Artist artist = artistRepository.findBySeq(artistSeq)
             .orElseThrow(() -> new BusinessException(ARTIST_NOT_FOUND));
