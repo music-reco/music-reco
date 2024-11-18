@@ -70,62 +70,49 @@ public class ChatService {
 
 
     }
-    public Mono<Void> invite(Long sendSeq, Long roomSeq) {
+    public void invite(Long sendSeq, Long roomSeq) {
         LocalDateTime joinTime = LocalDateTime.now();
 
-        // Room과 Artist 조회를 병렬로 실행
-        return Mono.zip(
-                Mono.just(roomRepository.findBySeq(roomSeq)
-                        .orElseThrow(() -> new BusinessException(ROOM_NOT_FOUND))),
-                Mono.just(artistRepository.findBySeq(sendSeq)
-                        .orElseThrow(() -> new BusinessException(ARTIST_NOT_FOUND)))
-        ).flatMap(tuple -> {
-            Room room = tuple.getT1();
-            Artist artist = chatRoomRepository.artistFindByRoomSeqWithoutMe(roomSeq, sendSeq).getFirst();
-            Long receiverSeq = artist.getSeq();
-            // ChatRoom과 ChatArtist 조회를 병렬로 실행
-            return Mono.zip(
-                    Mono.just(chatRoomRepository.findByPk(ChatRoom.PK.builder()
-                                    .roomSeq(roomSeq)
-                                    .artistSeq(receiverSeq)
-                                    .build())
-                            .orElse(null)),
-                    chatArtistMongoRepository.findByArtistSeqAndRoomSeq(receiverSeq, roomSeq)
-                            .switchIfEmpty(Mono.empty())
-            ).flatMap(innerTuple -> {
-                ChatRoom chatRoom = innerTuple.getT1();
-                ChatArtist chatArtist = innerTuple.getT2();
+        Room room = roomRepository.findBySeq(roomSeq)
+                .orElseThrow(() -> new BusinessException(ROOM_NOT_FOUND));
+        Artist artist = chatRoomRepository.artistFindByRoomSeqWithoutMe(roomSeq, sendSeq).getFirst();
+        Long receiverSeq = artist.getSeq();
+        // ChatRoom과 ChatArtist 조회를 병렬로 실행
+        log.info(String.valueOf(receiverSeq));
 
-                if (Objects.isNull(chatRoom) || Objects.isNull(chatArtist)) {
-                    chatRoom = ChatRoom.builder()
-                            .room(room)
-                            .artist(artist)
-                            .pk(ChatRoom.PK.builder()
-                                    .roomSeq(roomSeq)
-                                    .artistSeq(receiverSeq)
-                                    .build())
-                            .joinAt(joinTime)
-                            .build();
-                    chatArtist = ChatArtist.of(artist, roomSeq, joinTime);
-                } else if (Objects.isNull(chatRoom.getJoinAt())) {
-                    chatArtist.leave();
+        ChatRoom chatRoom = chatRoomRepository.findByPk(ChatRoom.PK.builder()
+                        .roomSeq(roomSeq)
+                        .artistSeq(receiverSeq)
+                        .build())
+                .orElse(null);
+        ChatArtist chatArtist = chatArtistMongoRepository.findByArtistSeqAndRoomSeq(receiverSeq, roomSeq).block();
 
-                    log.info("나간녀석 다시 강조 확인");
+        if (Objects.isNull(chatRoom) || Objects.isNull(chatArtist)) {
+            chatRoom = ChatRoom.builder()
+                    .room(room)
+                    .artist(artist)
+                    .pk(ChatRoom.PK.builder()
+                            .roomSeq(roomSeq)
+                            .artistSeq(receiverSeq)
+                            .build())
+                    .joinAt(joinTime)
+                    .build();
+            chatArtist = ChatArtist.of(artist, roomSeq, joinTime);
+        } else if (Objects.isNull(chatRoom.getJoinAt())) {
+            chatArtist.leave();
 
-                    chatArtist.join(joinTime);
-                    chatRoom.joinChatRoom(joinTime);
+            log.info("나간녀석 다시 강조 확인");
 
-                    log.info("나간녀석 초대 확인");
+            chatArtist.join(joinTime);
+            chatRoom.joinChatRoom(joinTime);
 
-                }
+            log.info("나간녀석 초대 확인");
 
-                // ChatRoom과 ChatArtist 저장을 병렬로 실행
-                return Mono.zip(
-                        Mono.just(chatRoomRepository.save(chatRoom)),
-                        chatArtistMongoRepository.save(chatArtist)
-                ).then();
-            });
-        });
+        }
+
+
+        chatRoomRepository.save(chatRoom);
+        chatArtistMongoRepository.save(chatArtist);
     }
 
 //    public void invite(Long artistSeq, Long roomSeq){
