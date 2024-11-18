@@ -6,6 +6,7 @@ import com.e106.reco.domain.artist.crew.entity.CrewUserState;
 import com.e106.reco.domain.artist.crew.repository.CrewUserRepository;
 import com.e106.reco.domain.artist.entity.Artist;
 import com.e106.reco.domain.artist.entity.Position;
+import com.e106.reco.domain.artist.repository.ArtistRepository;
 import com.e106.reco.domain.artist.user.dto.CustomUserDetails;
 import com.e106.reco.domain.artist.user.entity.User;
 import com.e106.reco.domain.board.dto.ArtistSummaryDto;
@@ -19,7 +20,6 @@ import com.e106.reco.domain.board.entity.BoardState;
 import com.e106.reco.domain.board.entity.Comment;
 import com.e106.reco.domain.board.entity.Like;
 import com.e106.reco.domain.board.entity.Source;
-import com.e106.reco.domain.artist.repository.ArtistRepository;
 import com.e106.reco.domain.board.repository.BoardRepository;
 import com.e106.reco.domain.board.repository.CommentRepository;
 import com.e106.reco.domain.board.repository.LikeRepository;
@@ -27,7 +27,6 @@ import com.e106.reco.domain.board.repository.SourceRepository;
 import com.e106.reco.global.common.CommonResponse;
 import com.e106.reco.global.error.errorcode.BoardErrorCode;
 import com.e106.reco.global.error.errorcode.CommonErrorCode;
-import com.e106.reco.global.error.errorcode.ErrorCode;
 import com.e106.reco.global.error.exception.BusinessException;
 import com.e106.reco.global.s3.S3FileService;
 import com.e106.reco.global.util.AuthUtil;
@@ -195,17 +194,22 @@ public class BoardService {
                 .thumbnail(null)
                 .build();
 
+        log.info("야호야호");
         boardRepository.save(board);
 
         if(files != null){
             List<String> fileNameList = s3FileService.uploadFiles(files);
 
             fileNameList.forEach(filename -> {
-                Source source = Source.builder().board(board).name(filename).build();
-
+                Source source = Source.builder()
+                        .board(board)
+                        .name(filename)
+                        .build();
+                log.info("sourceSeq : {}", source.getSeq());
                 sourceRepository.save(source);
             });
         }
+
         return new CommonResponse("글 작성 완료");
     }
 
