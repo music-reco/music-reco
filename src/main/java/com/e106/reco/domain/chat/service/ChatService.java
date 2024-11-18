@@ -71,7 +71,7 @@ public class ChatService {
 
     }
 
-    public void invite(Long roomSeq, Long artistSeq){
+    public void invite(Long artistSeq, Long roomSeq){
         Room room = roomRepository.findBySeq(roomSeq).orElseThrow(() -> new BusinessException(ROOM_NOT_FOUND));
 
         Artist artist = artistRepository.findBySeq(artistSeq)
@@ -190,10 +190,14 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
     public Mono<Chat> sendMsg(Chat chat){
         Artist artist = artistRepository.findBySeq(Long.parseLong(chat.getArtistSeq()))
             .orElseThrow(()->new BusinessException(ARTIST_NOT_FOUND));
+
         AuthUtil.getWebfluxCustomUserDetails()
                 .subscribe(user -> artistCertification(user.getSeq(), artist));
+
         invite(Long.parseLong(chat.getArtistSeq()), Long.parseLong(chat.getRoomSeq()));
+
         chat.setCreatedAt(LocalDateTime.now());
+
         return chatRepository.save(chat);
     }
 //    public Long createSingleChatRoom(RoomRequest roomRequest) {
