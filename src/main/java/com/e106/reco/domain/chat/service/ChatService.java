@@ -96,13 +96,13 @@ public class ChatService {
                             .build())
                     .joinAt(joinTime)
                     .build();
-            ChatArtist chatArtist = chatArtist = ChatArtist.of(artist, roomSeq, joinTime);
-
-
+            ChatArtist chatArtist = ChatArtist.of(artist, roomSeq, joinTime);
             chatArtistMongoRepository.save(chatArtist).subscribeOn(Schedulers.boundedElastic());
-
         } else if (Objects.isNull(chatRoom.getJoinAt())) {
             chatRoom.joinChatRoom(joinTime);
+            ChatArtist chatArtist = chatArtistMongoRepository.findByArtistSeqAndRoomSeq(receiverSeq, roomSeq).block();
+            chatArtist.join(joinTime);
+            chatArtistMongoRepository.save(chatArtist).subscribeOn(Schedulers.boundedElastic());
         }
 
         chatRoomRepository.save(chatRoom);
