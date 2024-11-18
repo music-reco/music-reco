@@ -215,7 +215,7 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
                 .joinAt(joinTime)
                 .state(RoomState.PERSONAL)
                 .build());
-        else if(Objects.isNull(senderRoom.getJoinAt())) senderRoom.joinChatRoom(joinTime);
+        if(Objects.isNull(senderRoom.getJoinAt())) senderRoom.joinChatRoom(joinTime);
 
         ChatArtist senderArtist = chatArtistMongoRepository.findByArtistSeqAndRoomSeq(sender.getSeq(), room.getSeq()).block();
         if(Objects.isNull(senderArtist)) senderArtist = ChatArtist.of(sender, room.getSeq(), joinTime);
@@ -225,14 +225,14 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
         ChatRoom receiverRoom = chatRoomRepository.findByPk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(receiver.getSeq()).build())
                 .orElse(null);
 
-        if(Objects.isNull(receiverRoom)) chatRoomRepository.save(ChatRoom.builder()
+        if(Objects.isNull(receiverRoom)) receiverRoom = chatRoomRepository.save(ChatRoom.builder()
                 .artist(receiver)
                 .room(room)
                 .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(receiver.getSeq()).build())
                 .joinAt(joinTime)
                 .state(RoomState.PERSONAL)
                 .build());
-        else if(Objects.isNull(receiverRoom.getJoinAt())) receiverRoom.joinChatRoom(joinTime);
+        if(Objects.isNull(receiverRoom.getJoinAt())) receiverRoom.joinChatRoom(joinTime);
 
         ChatArtist receiverArtist = chatArtistMongoRepository.findByArtistSeqAndRoomSeq(receiver.getSeq(), room.getSeq()).block();
         if(Objects.isNull(receiverArtist)) receiverArtist = ChatArtist.of(receiver, room.getSeq(), joinTime);
