@@ -15,6 +15,7 @@ import com.e106.reco.domain.chat.entity.Room;
 import com.e106.reco.domain.chat.entity.RoomState;
 import com.e106.reco.domain.chat.repository.ChatArtistMongoRepository;
 import com.e106.reco.domain.chat.repository.ChatArtistRedisRepository;
+import com.e106.reco.domain.chat.repository.ChatArtistStateRepository;
 import com.e106.reco.domain.chat.repository.ChatRepository;
 import com.e106.reco.domain.chat.repository.ChatRoomRepository;
 import com.e106.reco.domain.chat.repository.RoomRepository;
@@ -54,6 +55,7 @@ public class ChatService {
     private final ChatArtistRedisRepository chatArtistRedisRepository;
 //    private final ChatArtistStateRepository chatArtistStateRepository;
     private final ChatArtistMongoRepository chatArtistMongoRepository;
+    private final ChatArtistStateRepository chatArtistStateRepository;
 
 //    public Flux<Chat> getMsg(Long artistSeq, String roomSeq){
 //        chatArtistRepository.c
@@ -125,7 +127,7 @@ public class ChatService {
             throw new BusinessException(ARTIST_NOT_IN_CHAT);
 
         chatRoom.leaveChatRoom();
-        chatArtist.leave();
+        chatArtistStateRepository.updateJoinAtToNull(artistSeq, roomSeq);
         chatArtistMongoRepository.save(chatArtist).block();
 
         log.info(String.valueOf(chatArtist.getJoinAt()));

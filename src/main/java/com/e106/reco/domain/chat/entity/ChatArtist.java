@@ -33,7 +33,7 @@ public class ChatArtist {
 
     @Column(nullable = true)
     @Field("joinAt")
-    private String joinAt;
+    private LocalDateTime joinAt;
 
     @SuperBuilder
     @Embeddable
@@ -47,7 +47,7 @@ public class ChatArtist {
     }
 
     public ChatArtist join(LocalDateTime joinAt){
-        this.joinAt = joinAt.toString();
+        this.joinAt = joinAt;
         return this;
     }
     public void leave(){
@@ -67,7 +67,7 @@ public class ChatArtist {
                 .pk(PK.builder().artistSeq(artist.getSeq()).roomSeq(roomSeq).build())
                 .profilePicUrl(artist.getProfileImage())
                 .nickname(artist.getNickname())
-                .joinAt(joinAt.toString())
+                .joinAt(joinAt)
                 .build();
     }
 }
