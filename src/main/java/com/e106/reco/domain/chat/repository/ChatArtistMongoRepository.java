@@ -5,8 +5,9 @@ import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import reactor.core.publisher.Mono;
 
-public interface ChatArtistMongoRepository extends ReactiveMongoRepository<ChatArtist, String> {
+public interface ChatArtistMongoRepository extends ReactiveMongoRepository<ChatArtist, ChatArtist.PK> {
 
-    @Query("{ 'artistSeq': ?0 , 'roomSeq' : ?1}")
+    @Query("{ '_id.artistSeq': ?0 , '_id.roomSeq': ?1 }")
     Mono<ChatArtist> findByArtistSeqAndRoomSeq(Long artistSeq, Long roomSeq);
+
 }

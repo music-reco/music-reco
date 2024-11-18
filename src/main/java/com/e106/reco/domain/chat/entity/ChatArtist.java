@@ -1,31 +1,43 @@
 package com.e106.reco.domain.chat.entity;
 
 import com.e106.reco.domain.artist.entity.Artist;
+import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "chat_artist")
 public class ChatArtist {
 
     @Id
-    private String seq;
-
-    private Long artistSeq;
-    private Long roomSeq;
+    private PK pk;
 
     private String nickname;
     private String profilePicUrl;
     private LocalDateTime joinAt;
+
+    @SuperBuilder
+    @Embeddable
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Getter
+    @EqualsAndHashCode
+    public static class PK implements Serializable {
+        private Long artistSeq;
+        private Long roomSeq;
+    }
 
     public ChatArtist join(LocalDateTime joinAt){
         this.joinAt = joinAt;
@@ -37,7 +49,7 @@ public class ChatArtist {
 
     public static ChatArtist of(Artist artist) {
         return ChatArtist.builder()
-                .artistSeq(artist.getSeq())
+                .pk(PK.builder().artistSeq(artist.getSeq()).build())
                 .profilePicUrl(artist.getProfileImage())
                 .nickname(artist.getNickname())
                 .build();
@@ -45,8 +57,7 @@ public class ChatArtist {
 
     public static ChatArtist of(Artist artist, Long roomSeq, LocalDateTime joinAt) {
         return ChatArtist.builder()
-                .artistSeq(artist.getSeq())
-                .roomSeq(roomSeq)
+                .pk(PK.builder().artistSeq(artist.getSeq()).roomSeq(roomSeq).build())
                 .profilePicUrl(artist.getProfileImage())
                 .nickname(artist.getNickname())
                 .joinAt(joinAt)

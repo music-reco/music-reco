@@ -86,7 +86,7 @@ public class ChatService {
             // ChatRoom과 ChatArtist 조회를 병렬로 실행
             return Mono.zip(
                     Mono.just(chatRoomRepository.findByPk(ChatRoom.PK.builder()
-                                    .roomSeq(room.getSeq())
+                                    .roomSeq(roomSeq)
                                     .artistSeq(artistSeq)
                                     .build())
                             .orElse(null)),
@@ -101,13 +101,16 @@ public class ChatService {
                             .room(room)
                             .artist(artist)
                             .pk(ChatRoom.PK.builder()
-                                    .roomSeq(room.getSeq())
+                                    .roomSeq(roomSeq)
                                     .artistSeq(artistSeq)
                                     .build())
                             .joinAt(joinTime)
                             .build();
                     chatArtist = ChatArtist.of(artist, roomSeq, joinTime);
                 } else if (Objects.isNull(chatRoom.getJoinAt()) || Objects.isNull(chatArtist.getJoinAt())) {
+                    chatArtist.leave();
+                    chatRoom.leaveChatRoom();
+
                     chatArtist.join(joinTime);
                     chatRoom.joinChatRoom(joinTime);
                 }
