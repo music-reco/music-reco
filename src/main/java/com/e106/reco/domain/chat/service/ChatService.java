@@ -125,8 +125,10 @@ public class ChatService {
             throw new BusinessException(ARTIST_NOT_IN_CHAT);
 
         chatRoom.leaveChatRoom();
-        chatArtist.leave();
+        ChatArtist.leave(chatArtist);
         chatArtistMongoRepository.save(chatArtist).block();
+
+        log.info(String.valueOf(chatArtist.getJoinAt()));
     }
     public void invite(Long roomSeq, Long artistSeq){
         CustomUserDetails customUserDetails = AuthUtil.getCustomUserDetails();

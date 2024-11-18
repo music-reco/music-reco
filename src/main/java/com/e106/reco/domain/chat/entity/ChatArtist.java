@@ -50,8 +50,8 @@ public class ChatArtist {
         this.joinAt = joinAt;
         return this;
     }
-    public void leave(){
-        this.joinAt = null;
+    public static void leave(ChatArtist chatArtist){
+        chatArtist.joinAt = null;
     }
 
     public static ChatArtist of(Artist artist) {
