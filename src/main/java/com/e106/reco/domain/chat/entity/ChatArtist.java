@@ -2,6 +2,7 @@ package com.e106.reco.domain.chat.entity;
 
 import com.e106.reco.domain.artist.entity.Artist;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -28,6 +30,9 @@ public class ChatArtist {
 
     private String nickname;
     private String profilePicUrl;
+
+    @Column(nullable = true)
+    @Field("joinAt")
     private LocalDateTime joinAt;
 
     @SuperBuilder
