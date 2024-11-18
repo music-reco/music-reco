@@ -10,12 +10,17 @@ import com.mongodb.reactivestreams.client.MongoClients;
 
 @Configuration
 public class MongoReactiveConfig extends AbstractReactiveMongoConfiguration {
+
     @Value("${spring.data.mongodb.uri}")
     String uri;
 
+    @Value("${spring.data.mongodb.database}")
+    String databaseName; // 설정 파일에서 데이터베이스 이름을 가져옵니다.
+
     @Override
     protected String getDatabaseName() {
-        return "reco";
+        // 이미 존재하는 데이터베이스 이름을 반환
+        return databaseName != null ? databaseName : "RECO";  // 기본 값은 "reco"
     }
 
     @Override
