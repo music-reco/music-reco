@@ -91,7 +91,7 @@ public class ChatService {
                     .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(artistSeq).build())
                     .joinAt(joinTime)
                     .build();
-            ChatArtist.of(artist, roomSeq, joinTime);
+            chatArtist = ChatArtist.of(artist, roomSeq, joinTime);
         }else if (Objects.isNull(chatRoom.getJoinAt()) || Objects.isNull(chatArtist.getJoinAt())){
             chatArtist.join(joinTime);
             chatRoom.joinChatRoom(joinTime);
