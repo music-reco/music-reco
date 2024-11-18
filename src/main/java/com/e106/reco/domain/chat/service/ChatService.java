@@ -107,9 +107,8 @@ public class ChatService {
                             .joinAt(joinTime)
                             .build();
                     chatArtist = ChatArtist.of(artist, roomSeq, joinTime);
-                } else if (Objects.isNull(chatRoom.getJoinAt()) || Objects.isNull(chatArtist.getJoinAt())) {
+                } else if (Objects.isNull(chatRoom.getJoinAt())) {
                     chatArtist.leave();
-                    chatRoom.leaveChatRoom();
 
                     log.info("나간녀석 다시 강조 확인");
 
