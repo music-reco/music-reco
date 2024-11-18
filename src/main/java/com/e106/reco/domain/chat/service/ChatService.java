@@ -10,6 +10,7 @@ import com.e106.reco.domain.chat.dto.ChatRoomResponse;
 import com.e106.reco.domain.chat.dto.RoomResponse;
 import com.e106.reco.domain.chat.entity.Chat;
 import com.e106.reco.domain.chat.entity.ChatArtist;
+import com.e106.reco.domain.chat.entity.ChatRoom;
 import com.e106.reco.domain.chat.entity.Room;
 import com.e106.reco.domain.chat.repository.ChatArtistMongoRepository;
 import com.e106.reco.domain.chat.repository.ChatArtistRedisRepository;
@@ -31,9 +32,11 @@ import reactor.core.scheduler.Schedulers;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 
 import static com.e106.reco.global.error.errorcode.ArtistErrorCode.ARTIST_NOT_FOUND;
 import static com.e106.reco.global.error.errorcode.ChatErrorCode.CHAT_GRANT_FAIL;
+import static com.e106.reco.global.error.errorcode.ChatErrorCode.ROOM_NOT_FOUND;
 import static com.e106.reco.global.error.errorcode.CrewErrorCode.CREW_USER_NOT_FOUND;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 
@@ -68,15 +71,34 @@ public class ChatService {
 
     }
 
-//    public Flux<List<ChatArtist>> getArtistInfo(String roomSeq) {
-//        return chatRoomRepository.artistSeqFindByRoomSeq(Long.parseLong(roomSeq)) // roomSeq에 해당하는 artistSeq 리스트 조회
-//                .flatMapMany(artistSeqList -> Flux.fromIterable(artistSeqList)    // List<Long>을 Flux<Long>으로 변환
-//                        .flatMap(artistSeq -> chatArtistRepository.getChatUser(artistRepository.findBySeq(artistSeq)
-//                                .orElseThrow(()-> new Busin
-//                                essException(ARTIST_NOT_FOUND))))      // 각 artistSeq에 대해 Redis에서 ChatArtist 조회
-//                )
-//                .collectList(); // Mono<List<ChatArtist>>로 변환
-//    }
+    public void invite(Long roomSeq, Long artistSeq){
+        Room room = roomRepository.findBySeq(roomSeq).orElseThrow(() -> new BusinessException(ROOM_NOT_FOUND));
+
+        Artist artist = artistRepository.findBySeq(artistSeq)
+                .orElseThrow(() -> new BusinessException(ARTIST_NOT_FOUND));
+
+        LocalDateTime joinTime = LocalDateTime.now();
+
+        ChatRoom chatRoom = chatRoomRepository.findByPk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(artistSeq).build())
+                .orElse(null);
+        ChatArtist chatArtist = chatArtistMongoRepository.findByArtistSeqAndRoomSeq(artistSeq, roomSeq).switchIfEmpty(null).block();
+
+
+        if(Objects.isNull(chatRoom) || Objects.isNull(chatArtist)) {
+            chatRoom = ChatRoom.builder()
+                    .room(room)
+                    .artist(artist)
+                    .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(artistSeq).build())
+                    .joinAt(joinTime)
+                    .build();
+            ChatArtist.of(artist, roomSeq, joinTime);
+        }else if (Objects.isNull(chatRoom.getJoinAt()) || Objects.isNull(chatArtist.getJoinAt())){
+            chatArtist.join(joinTime);
+            chatRoom.joinChatRoom(joinTime);
+        }
+        chatRoomRepository.save(chatRoom);
+        chatArtistMongoRepository.save(chatArtist).block();
+    }
 public Flux<RoomResponse> getChatRooms(Long artistSeq) {
     Artist artist = artistRepository.findBySeq(artistSeq)
             .orElseThrow(() -> new BusinessException(ARTIST_NOT_FOUND));
@@ -170,6 +192,7 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
             .orElseThrow(()->new BusinessException(ARTIST_NOT_FOUND));
         AuthUtil.getWebfluxCustomUserDetails()
                 .subscribe(user -> artistCertification(user.getSeq(), artist));
+        invite(Long.parseLong(chat.getArtistSeq()), Long.parseLong(chat.getRoomSeq()));
         chat.setCreatedAt(LocalDateTime.now());
         return chatRepository.save(chat);
     }
