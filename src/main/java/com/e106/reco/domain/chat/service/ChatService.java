@@ -331,7 +331,7 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
         Criteria criteria = where("roomSeq").is(roomSeq);
 
         // 먼저, 해당 roomSeq에 대한 모든 ChatArtist를 반환
-        Flux<ChatArtist> chatArtists = Flux.fromIterable(chatRoomRepository.artistFindByRoomSeq(roomSeq)
+        Flux<ChatArtist> chatArtists = Flux.fromIterable(chatRoomRepository.artistFindByRoomSeqWithoutMe(roomSeq, AuthUtil.getWebfluxCustomUserDetails().block().getSeq())
                 .stream().map(artist -> ChatArtist.of(artist)).toList());
 
 
