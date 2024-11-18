@@ -22,7 +22,7 @@ public class RecommendController {
     @GetMapping("/{artistSeq}")
     public ResponseEntity<List<ArtistRecommendationDTO>> getRecommendations(
             @PathVariable Long artistSeq,
-            @RequestParam(defaultValue = "10") int limit) {
+            @RequestParam(defaultValue = "12") int limit) {
         return ResponseEntity.ok(
                 recommendService.getRecommendations(artistSeq, limit)
         );
@@ -31,7 +31,7 @@ public class RecommendController {
     @GetMapping("/{artistSeq}/initial")
     public ResponseEntity<List<InitialRecommendationDTO>> getInitialRecommendations(
             @PathVariable Long artistSeq,
-            @RequestParam(defaultValue = "10") int limit) {
+            @RequestParam(defaultValue = "12") int limit) {
         return ResponseEntity.ok(recommendService.getInitialRecommendations(artistSeq, limit));
     }
 }
