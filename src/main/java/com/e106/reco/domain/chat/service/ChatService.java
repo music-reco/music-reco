@@ -102,7 +102,7 @@ public class ChatService {
                             .artist(artist)
                             .pk(ChatRoom.PK.builder()
                                     .roomSeq(roomSeq)
-                                    .artistSeq(sendSeq)
+                                    .artistSeq(receiverSeq)
                                     .build())
                             .joinAt(joinTime)
                             .build();
