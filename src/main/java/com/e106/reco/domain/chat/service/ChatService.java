@@ -81,7 +81,7 @@ public class ChatService {
                         .orElseThrow(() -> new BusinessException(ARTIST_NOT_FOUND)))
         ).flatMap(tuple -> {
             Room room = tuple.getT1();
-            Artist artist = tuple.getT2();
+            Artist artist = chatRoomRepository.artistFindByRoomSeqWithoutMe(roomSeq, artistSeq).getFirst();
 
             // ChatRoom과 ChatArtist 조회를 병렬로 실행
             return Mono.zip(
