@@ -81,8 +81,14 @@ public class ChatService {
 
         ChatRoom chatRoom = chatRoomRepository.findByPk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(artistSeq).build())
                 .orElse(null);
-        ChatArtist chatArtist = chatArtistMongoRepository.findByArtistSeqAndRoomSeq(artistSeq, roomSeq).switchIfEmpty(null).block();
 
+//        ChatArtist chatArtist = chatArtistMongoRepository.findByArtistSeqAndRoomSeq(artistSeq, roomSeq)
+//                .switchIfEmpty(null)
+//                .block();
+        // 수정한 부분
+        ChatArtist chatArtist = chatArtistMongoRepository.findByArtistSeqAndRoomSeq(artistSeq, roomSeq)
+                .switchIfEmpty(Mono.empty())  // null 대신 Mono.empty() 사용
+                .block();
 
         if(Objects.isNull(chatRoom) || Objects.isNull(chatArtist)) {
             chatRoom = ChatRoom.builder()
