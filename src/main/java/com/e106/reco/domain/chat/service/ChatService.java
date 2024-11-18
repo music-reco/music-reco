@@ -85,9 +85,8 @@ public class ChatService {
                         .artistSeq(receiverSeq)
                         .build())
                 .orElse(null);
-        ChatArtist chatArtist = chatArtistMongoRepository.findByArtistSeqAndRoomSeq(receiverSeq, roomSeq).block();
 
-        if (Objects.isNull(chatRoom) || Objects.isNull(chatArtist)) {
+        if (Objects.isNull(chatRoom)) {
             chatRoom = ChatRoom.builder()
                     .room(room)
                     .artist(artist)
@@ -97,22 +96,16 @@ public class ChatService {
                             .build())
                     .joinAt(joinTime)
                     .build();
-            chatArtist = ChatArtist.of(artist, roomSeq, joinTime);
+            ChatArtist chatArtist = chatArtist = ChatArtist.of(artist, roomSeq, joinTime);
+
+
+            chatArtistMongoRepository.save(chatArtist).subscribeOn(Schedulers.boundedElastic());
+
         } else if (Objects.isNull(chatRoom.getJoinAt())) {
-            chatArtist.leave();
-
-            log.info("나간녀석 다시 강조 확인");
-
-            chatArtist.join(joinTime);
             chatRoom.joinChatRoom(joinTime);
-
-            log.info("나간녀석 초대 확인");
-
         }
 
-
         chatRoomRepository.save(chatRoom);
-        chatArtistMongoRepository.save(chatArtist);
     }
 
 //    public void invite(Long artistSeq, Long roomSeq){
