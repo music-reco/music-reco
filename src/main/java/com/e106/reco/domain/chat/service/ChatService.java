@@ -125,7 +125,7 @@ public class ChatService {
             throw new BusinessException(ARTIST_NOT_IN_CHAT);
 
         chatRoom.leaveChatRoom();
-        ChatArtist.leave(chatArtist);
+        chatArtist.leave();
         chatArtistMongoRepository.save(chatArtist).block();
 
         log.info(String.valueOf(chatArtist.getJoinAt()));
