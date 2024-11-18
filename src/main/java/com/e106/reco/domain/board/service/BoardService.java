@@ -195,12 +195,15 @@ public class BoardService {
                 .build();
 
         log.info("야호야호");
-        boardRepository.save(board);
-
+        log.info("files : {}", files);
+        Board savedBoard = boardRepository.save(board);
+        log.info("savedBoard : {}", savedBoard.getSeq());
         if(files != null){
+            log.info("파일 넣기 시작");
             List<String> fileNameList = s3FileService.uploadFiles(files);
 
             fileNameList.forEach(filename -> {
+                log.info("fileName: {}", filename);
                 Source source = Source.builder()
                         .board(board)
                         .name(filename)
