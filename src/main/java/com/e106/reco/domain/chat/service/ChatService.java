@@ -220,9 +220,7 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
         ChatArtist senderArtist = chatArtistMongoRepository.findByArtistSeqAndRoomSeq(sender.getSeq(), room.getSeq()).block();
         if(Objects.isNull(senderArtist)) senderArtist = ChatArtist.of(sender, room.getSeq(), joinTime);
         else if(Objects.isNull(senderArtist.getJoinAt())) senderArtist.join(joinTime);
-
         chatArtistMongoRepository.save(senderArtist).block();
-
 
         ChatRoom receiverRoom = chatRoomRepository.findByPk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(receiver.getSeq()).build())
                 .orElse(null);
@@ -231,6 +229,7 @@ public Flux<RoomResponse> getChatRooms(Long artistSeq) {
                 .artist(receiver)
                 .room(room)
                 .pk(ChatRoom.PK.builder().roomSeq(room.getSeq()).artistSeq(receiver.getSeq()).build())
+                .joinAt(joinTime)
                 .state(RoomState.PERSONAL)
                 .build());
         else if(Objects.isNull(receiverRoom.getJoinAt())) receiverRoom.joinChatRoom(joinTime);
