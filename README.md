@@ -129,6 +129,9 @@
 ### 아키텍처
 <img src="resource/structure.png"></td>
 
+### ERD
+<img src="resource/erd.png"></td>
+
 ## 팀원
 <table>
     <tr>
