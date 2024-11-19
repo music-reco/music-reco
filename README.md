@@ -1,7 +1,6 @@
 # 음악의 재.구.SoNG
 
 
-
 ## 프로젝트 소개
 진행 기간 : 2024.10.14 ~ 2024.10.19  
 인원 : 5명 (인프라 1명, 백엔드 2명, 프론트 3명)
@@ -30,6 +29,66 @@
     - 유저 정보(포지션, 장르, 지역)을 기반으로 유사한 유저 추천
 
 ## 서비스 화면
+
+<table>
+    <tr>
+        <th style="text-align: center;">로그인 페이지</th>
+        <th style="text-align: center;">메인 페이지</th>
+    </tr>
+    <tr>
+        <td><img src="resource/screen/1.png"></td>
+        <td><img src="resource/screen/2.png"></td>
+    </tr>
+    <tr>
+        <th style="text-align: center;"> 음원 업로드 페이지</th>
+        <th style="text-align: center;">워크스페이스 페이지</th>
+    </tr>
+    <tr>
+        <td><img src="resource/screen/3.png"></td>
+        <td><img src="resource/screen/4.png"></td>
+    </tr>
+    <tr>
+        <th style="text-align: center;">피드 목록 페이지</th>
+        <th style="text-align: center;">음원피드 목록 페이지</th>
+    </tr>
+    <tr>
+        <td><img src="resource/screen/5.png"></td>
+        <td><img src="resource/screen/6.png"></td>
+    </tr>
+    <tr>
+        <th style="text-align: center;">게시물 상세 페이지</th>
+        <th style="text-align: center;">게시물 생성 페이지</th>
+    </tr>
+    <tr>
+        <td><img src="resource/screen/7.png"></td>
+        <td><img src="resource/screen/8.png"></td>
+    </tr>
+    <tr>
+        <th style="text-align: center;">마이페이지</th>
+        <th style="text-align: center;">검색창</th>
+    </tr>
+    <tr>
+        <td><img src="resource/screen/9.png"></td>
+        <td><img src="resource/screen/10.png"></td>
+    </tr>
+        <tr>
+        <th style="text-align: center;">채팅 목록</th>
+        <th style="text-align: center;">채팅창</th>
+    </tr>
+    <tr>
+        <td><img src="resource/screen/11.png"></td>
+        <td><img src="resource/screen/12.png"></td>
+    </tr>
+        <tr>
+        <th style="text-align: center;">게임 페이지</th>
+        <th style="text-align: center;">게임 상세 페이지</th>
+    </tr>
+    <tr>
+        <td><img src="resource/screen/13.png"></td>
+        <td><img src="resource/screen/14.png"></td>
+    </tr>
+</table>
+
 
 
 ## 주요 기술 스택
