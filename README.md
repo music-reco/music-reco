@@ -1,9 +1,9 @@
 # 음악의 재.구.SoNG
-
+<img src="resource/Logo.png"></td>
 
 ## 프로젝트 소개
-진행 기간 : 2024.10.14 ~ 2024.10.19  
-인원 : 5명 (인프라 1명, 백엔드 2명, 프론트 3명)
+**진행 기간** : 2024.10.14 ~ 2024.11.19  
+**인원** : 5명 (인프라 1명, 백엔드 2명, 프론트 3명)
 
 가수들이 꾸준히 리메이커곡을 발매하고 많은 리메이커곡이 원곡과는 비슷하면서 새로운 분위기로 사랑받고 있습니다. 가수뿐만 아니라 일반인들도 자신의 유튜브 채널에 커버곡을 올리는 경우가 많이 있습니다. 혹시 곡을 리메이커 하는 것에 관심이 있나요? 그런데 전문적인 음악지식과 편곡지식이 없어서 힘드신가요? 음원 재생산 플랫폼인 재구송이 쉽게 도와드립니다.
 
@@ -127,4 +127,23 @@
 ## 산출물
 
 ### 아키텍처
+<img src="resource/structure.png"></td>
+
+## 팀원
+<table>
+    <tr>
+        <th style="text-align: center;">박수빈</th>
+        <th style="text-align: center;">권혜경</th>
+        <th style="text-align: center;">구현우</th>
+        <th style="text-align: center;">김송희</th>
+        <th style="text-align: center;">송도언</th>
+    </tr>
+    <tr>
+        <td style="text-align: center; vertical-align: baseline;">팀장<br>프론트엔드</td>
+        <td style="text-align: center; vertical-align: baseline;">백엔드<br>webFlux 연결</td>
+        <td style="text-align: center; vertical-align: baseline;">프론트엔드<br>webFlux 연결</td>
+        <td style="text-align: center; vertical-align: baseline;">프론트엔드<br>백엔드</td>
+        <td style="text-align: center; vertical-align: baseline;">인프라<br>백엔드<br>추천 알고리즘</td>
+    </tr>
+</table>
 
