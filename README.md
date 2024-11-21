@@ -226,7 +226,7 @@
                 <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-`wavesurfer.js` -라이브러리를 를  활용해 사용자가 업로드한 음원의 파형을 시각화.
                 <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-`wavesurfer.js` -각 음원의 시작, 종료 지점을 설정할 수 있도록 UI에 커서를 추가하고, `zustand`를 이용해 글로벌 상태로 관리.
                 <br>&nbsp;&nbsp;&nbsp;&nbsp;음원 수정 기능
-                <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`react-rnd`를 사용하여 음원의 세션 영역을 드래그하거나 리사이즈하여 수정 가능.
+                <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`react-rnd`를 사용하여 음원의 세션 영역을 드래그하여 수정 가능.
                 <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-사용자의 세션 수정 사항은 `zustand`와 `wavesurfer.js` 간 동기화를 통해 정확하게 반영.
                 <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-오프셋(offset)이 발생하는 세션에 대해 동시 재생 시 문제를 해결하기 위해, 커스텀 로직으로 `setTimeout`을 활용하여 재생 동기화 처리.
                 <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-사용자가 설정한 글로벌 시작/종료 지점 및 각 세션의 오프셋을 기반으로 모든 음원이 자연스럽게 동시 재생되도록 구현.
